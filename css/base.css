@@ -507,3 +507,40 @@ body[data-theme="light"] {
   letter-spacing: 0;
   vertical-align: baseline;
 }
+
+/* ════════════════════════════════════════
+   ICON SYSTEM
+   - Nav icons: stroke-width 1.8, outline only
+   - App icons (qa, po, phdr): stroke-width 2, accent-colored bg
+════════════════════════════════════════ */
+
+/* Nav icons — thin outline */
+.ni-icon svg {
+  stroke-width: 1.8;
+  display: block;
+}
+.ni.active .ni-icon svg {
+  filter: drop-shadow(0 0 5px var(--accent-g));
+}
+
+/* In-app action icons — bolder stroke for hierarchy difference */
+.qa-ico svg,
+.po-icon svg,
+.phdr-right svg,
+.ibtn svg {
+  stroke-width: 2;
+  display: block;
+}
+
+/* Quick action icon sizing */
+.qa-ico svg { width: 18px; height: 18px; }
+
+/* Profile option icon inherits muted color */
+.po-icon svg { color: var(--soft); }
+
+/* Ensure ibtn flex-centers SVG children */
+.ibtn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}

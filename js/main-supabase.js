@@ -7,11 +7,13 @@ let _nfData       = [];
 let _extratoData  = [];
 let _impostosData = [];
 let _prolaboreData= [];
+let _justRegistered = false;
 
 /* ── BOOT ── */
 document.addEventListener('DOMContentLoaded', async () => {
   showLoading(true);
   sbOnAuthChange(async (event, user) => {
+    if (_justRegistered) return; // evita initApp durante fluxo de registro
     if (user) await initApp();
     else { showLoading(false); showLoginScreen(true); }
   });
@@ -83,18 +85,42 @@ async function doLogin() {
 }
 
 async function doRegister() {
-  const email = document.getElementById('login-email')?.value;
+  const email = document.getElementById('login-email')?.value?.trim();
   const pass  = document.getElementById('login-pass')?.value;
   if (!email || !pass) { toast('⚠️', 'Preencha e-mail e senha'); return; }
+  if (pass.length < 6) { toast('⚠️', 'A senha deve ter ao menos 6 caracteres'); return; }
   try {
+    _justRegistered = true;
     showLoading(true);
-    await sbRegister(email, pass);
+    const user = await sbRegister(email, pass);
     showLoading(false);
-    toast('📧', 'Confirme seu e-mail para continuar');
+    if (user && user.identities && user.identities.length === 0) {
+      // e-mail já cadastrado
+      toast('⚠️', 'E-mail já cadastrado. Faça login.');
+      _justRegistered = false;
+      return;
+    }
+    // Mostra feedback de sucesso na tela de login
+    showRegisterSuccess();
+    toast('🎉', 'Conta criada! Verifique seu e-mail.');
   } catch (err) {
+    _justRegistered = false;
     showLoading(false);
     toast('❌', err.message);
   }
+}
+
+function showRegisterSuccess() {
+  const loginBox = document.querySelector('#login-screen > div');
+  if (!loginBox) return;
+  loginBox.innerHTML = `
+    <div style="text-align:center;padding:16px 0">
+      <div style="font-size:40px;margin-bottom:12px">📧</div>
+      <div style="font-family:var(--f-mono);font-size:13px;font-weight:700;color:var(--text1);letter-spacing:1px;margin-bottom:8px">CONTA CRIADA!</div>
+      <div style="font-family:var(--f-mono);font-size:10px;color:var(--muted);letter-spacing:.5px;line-height:1.6">Enviamos um e-mail de confirmação.<br>Clique no link e depois faça login.</div>
+    </div>
+    <button onclick="location.reload()" style="width:100%;padding:13px;background:var(--accent);border:none;border-radius:10px;color:#fff;font-family:var(--f-mono);font-size:12px;font-weight:700;letter-spacing:1px;cursor:pointer;margin-top:16px">VOLTAR AO LOGIN</button>
+  `;
 }
 
 async function doLogout() {
