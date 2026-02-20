@@ -5,6 +5,15 @@ function fmtVal(v) {
   if (!m) return v;
   return m[1] + '<span class="cents">,' + m[2] + '</span>';
 }
+<<<<<<< HEAD
+=======
+/* Format "R$ X.XXX,XX" string with cents span (or return as-is if '—' or foreign) */
+function fmtBRL(v) {
+  if (!v || v === '—') return v;
+  if (v.startsWith('R$ ')) return 'R$ ' + fmtVal(v.slice(3));
+  return fmtVal(v);
+}
+>>>>>>> b2ea1f6 (fix: valores monetários com centavos em todos os lugares)
 
 /* ════════════════════
    NOTAS FISCAIS
@@ -140,12 +149,20 @@ function buildTaxList() {
           <div class="tr-name">${row.name}</div>
           <div class="tr-due" style="color:${row.color}">${row.due}</div>
         </div>
+<<<<<<< HEAD
         <div class="tr-val val" style="color:${row.color}" data-raw="${row.val}">${row.val}</div>
+=======
+        <div class="tr-val val" style="color:${row.color}" data-raw="${row.val}">${fmtBRL(row.val)}</div>
+>>>>>>> b2ea1f6 (fix: valores monetários com centavos em todos os lugares)
       </div>
       <div class="tr-track"><div class="tr-fill" style="background:${row.color}" data-f="${row.fill}"></div></div>
       <div class="tr-detail">
         <div class="trd-grid">
+<<<<<<< HEAD
           <div class="trd"><div class="trd-lbl">Base de cálculo</div><div class="trd-val">${row.detail.base}</div></div>
+=======
+          <div class="trd"><div class="trd-lbl">Base de cálculo</div><div class="trd-val">${fmtBRL(row.detail.base)}</div></div>
+>>>>>>> b2ea1f6 (fix: valores monetários com centavos em todos os lugares)
           <div class="trd"><div class="trd-lbl">Alíquota</div><div class="trd-val">${row.detail.aliq}</div></div>
           <div class="trd"><div class="trd-lbl">Competência</div><div class="trd-val">${row.detail.comp}</div></div>
           <div class="trd"><div class="trd-lbl">Regime</div><div class="trd-val">${row.detail.regime}</div></div>
@@ -233,7 +250,11 @@ function updateSim(val) {
     document.getElementById('simTitle').textContent = 'Ainda no Anexo V';
     document.getElementById('simTitle').style.color = 'var(--amber)';
     const needed = Math.ceil(FR.faturamento*0.28 - val);
+<<<<<<< HEAD
     document.getElementById('simDesc').textContent = 'Falta R$ '+needed.toLocaleString('pt-BR')+' de pró-labore para atingir 28%.';
+=======
+    document.getElementById('simDesc').textContent = 'Falta R$ '+needed.toLocaleString('pt-BR')+',00 de pró-labore para atingir 28%.';
+>>>>>>> b2ea1f6 (fix: valores monetários com centavos em todos os lugares)
     document.getElementById('simSav').textContent = '—';
     document.getElementById('simSav').style.color = 'var(--muted)';
     document.getElementById('frTitle').textContent = 'Você está no Anexo V';
@@ -249,7 +270,11 @@ function buildPLHist() {
       <div class="plh-ico">${item.paid ? '✅' : '📋'}</div>
       <div class="plh-body">
         <div class="plh-month">${item.month}</div>
+<<<<<<< HEAD
         <div class="plh-detail">INSS: <span class="val" data-raw="${item.inss}">R$ ${item.inss}</span> · Líquido: <span class="val" data-raw="${item.net}">R$ ${item.net}</span></div>
+=======
+        <div class="plh-detail">INSS: <span class="val" data-raw="${item.inss}">R$ ${fmtVal(item.inss)}</span> · Líquido: <span class="val" data-raw="${item.net}">R$ ${fmtVal(item.net)}</span></div>
+>>>>>>> b2ea1f6 (fix: valores monetários com centavos em todos os lugares)
       </div>
       <div class="plh-right">
         <div class="plh-val val" data-raw="${item.val}">R$ ${fmtVal(item.val.includes(',') ? item.val : item.val + ',00')}</div>
