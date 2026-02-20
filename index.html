@@ -15,6 +15,27 @@
 </head>
 <body>
 
+<div id="loading-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;flex-direction:column;gap:12px;font-family:var(--f-mono);">
+  <div style="width:36px;height:36px;border-radius:50%;border:3px solid rgba(255,255,255,0.15);border-top-color:var(--accent);animation:spin 0.8s linear infinite;"></div>
+  <span style="color:var(--soft);font-size:11px;letter-spacing:1px">CARREGANDO...</span>
+</div>
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+
+<div id="login-screen" style="display:none;position:fixed;inset:0;z-index:9998;background:var(--base);align-items:center;justify-content:center;">
+  <div style="width:100%;max-width:340px;padding:32px 24px;background:var(--card);border:1px solid var(--border1);border-radius:20px;display:flex;flex-direction:column;gap:16px;">
+    <div style="text-align:center;margin-bottom:8px">
+      <div style="font-size:32px">📊</div>
+      <div style="font-family:var(--f-mono);font-size:13px;font-weight:700;color:var(--text1);letter-spacing:1px;margin-top:6px">CONTÁBIL</div>
+      <div style="font-family:var(--f-mono);font-size:10px;color:var(--muted);letter-spacing:2px">GESTÃO FINANCEIRA PJ</div>
+    </div>
+    <input id="login-email" type="email" placeholder="seu@email.com" style="width:100%;padding:12px 14px;background:var(--lift);border:1px solid var(--border2);border-radius:10px;color:var(--text1);font-family:var(--f-mono);font-size:12px;box-sizing:border-box;outline:none;"/>
+    <input id="login-pass" type="password" placeholder="••••••••" style="width:100%;padding:12px 14px;background:var(--lift);border:1px solid var(--border2);border-radius:10px;color:var(--text1);font-family:var(--f-mono);font-size:12px;box-sizing:border-box;outline:none;" onkeydown="if(event.key==='Enter') doLogin()"/>
+    <button onclick="doLogin()" style="width:100%;padding:13px;background:var(--accent);border:none;border-radius:10px;color:#fff;font-family:var(--f-mono);font-size:12px;font-weight:700;letter-spacing:1px;cursor:pointer;">ENTRAR</button>
+    <div style="display:flex;align-items:center;gap:10px"><div style="flex:1;height:1px;background:var(--border1)"></div><span style="font-family:var(--f-mono);font-size:10px;color:var(--muted)">OU</span><div style="flex:1;height:1px;background:var(--border1)"></div></div>
+    <button onclick="doRegister()" style="width:100%;padding:13px;background:transparent;border:1px solid var(--border2);border-radius:10px;color:var(--soft);font-family:var(--f-mono);font-size:12px;letter-spacing:1px;cursor:pointer;">CRIAR CONTA</button>
+  </div>
+</div>  
+
 <div class="phone" id="phone">
 
   <!-- Dynamic Island -->
@@ -698,12 +719,15 @@
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="js/data.js"></script>
 <script src="js/company.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/pages.js"></script>
 <script src="js/charts.js"></script>
-<script src="js/main.js"></script>
+<script src="js/supabase.js"></script>
+<script src="js/api.js"></script>
+<script src="js/main-supabase.js"></script>
 
   <script>
     function setTheme(mode) {
