@@ -1,0 +1,75 @@
+/* ════════════════════════════════════════
+   TOKENS — Paleta "Meridian" + Instrument
+════════════════════════════════════════ */
+:root {
+  --bg:        #0D0B09;
+  --surface:   #141210;
+  --card:      #1A1714;
+  --lift:      #211E1A;
+  --border:    #2E2922;
+  --border2:   #3A342C;
+  --dim:       #564E42;
+  --muted:     #857A6A;
+  --soft:      #ADA090;
+  --text:      #EAE4DA;
+  --bright:    #F6F2EC;
+
+  --accent:    #C0963C;
+  --accent-d:  rgba(192,150,60,.11);
+  --accent-g:  rgba(192,150,60,.28);
+
+  --green:     #5EAF82;
+  --green-d:   rgba(94,175,130,.10);
+  --green-b:   rgba(94,175,130,.20);
+
+  --red:       #B85C52;
+  --red-d:     rgba(184,92,82,.10);
+  --red-b:     rgba(184,92,82,.20);
+
+  --amber:     #B8883A;
+  --amber-d:   rgba(184,136,58,.10);
+  --amber-b:   rgba(184,136,58,.20);
+
+  /* Instrument family — serif para display, sans para corpo */
+  --f-sans:  'Instrument Sans', sans-serif;
+  --f-serif: 'Instrument Serif', serif;
+  --f-mono:  'DM Mono', monospace;
+
+  --r: 14px;
+  --r-sm: 10px;
+  --r-xs: 7px;
+}
+
+/* ════════════════════════════════════════
+   LIGHT MODE — mesma alma Meridian
+   Pergaminho quente + ouro contido
+════════════════════════════════════════ */
+[data-theme="light"] {
+  --bg:        #F5F0E8;
+  --surface:   #EDE8DC;
+  --card:      #E6E0D2;
+  --lift:      #DDD6C6;
+  --border:    #CEC6B4;
+  --border2:   #BEB4A0;
+  --dim:       #9E9280;
+  --muted:     #7A6E5E;
+  --soft:      #5A5044;
+  --text:      #2C2418;
+  --bright:    #1A1208;
+
+  --accent:    #A07830;
+  --accent-d:  rgba(160,120,48,.12);
+  --accent-g:  rgba(160,120,48,.30);
+
+  --green:     #3A8A5E;
+  --green-d:   rgba(58,138,94,.10);
+  --green-b:   rgba(58,138,94,.22);
+
+  --red:       #96443A;
+  --red-d:     rgba(150,68,58,.10);
+  --red-b:     rgba(150,68,58,.22);
+
+  --amber:     #9A6C28;
+  --amber-d:   rgba(154,108,40,.10);
+  --amber-b:   rgba(154,108,40,.22);
+}

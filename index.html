@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Contábil — Gestão Financeira PJ</title>
+<meta name="description" content="App de gestão financeira para MEI, ME e EPP">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/dashboard.css">
+<link rel="stylesheet" href="css/pages.css">
+</head>
+<body>
+
+<div class="phone" id="phone">
+
+  <!-- Dynamic Island -->
+  <div class="island">
+    <div class="i-cam"></div>
+    <div class="i-dot"></div>
+  </div>
+
+  <!-- Status bar -->
+  <div class="status">
+    <span class="s-time">09:41</span>
+    <div class="s-right">
+      <span class="s-icon">▲▲▲</span>
+      <span class="s-icon">WiFi</span>
+      <span class="s-icon">⬛</span>
+    </div>
+  </div>
+
+  <div class="screen">
+
+    <!-- ══════════════════════════════════════
+         HOME
+    ══════════════════════════════════════ -->
+    <div id="page-home" class="page active">
+
+      <div class="greet">
+        <div class="greet-left">
+          <div class="greet-hello">Bom dia, Wellington 👋</div>
+          <div class="greet-name">Wellington Conrado</div>
+        </div>
+        <div class="greet-right">
+          <div class="company-badge" onclick="switchPage('perfil')">
+            <span class="cb-type" id="companyTypeBadge">EPP</span>
+          </div>
+          <div class="ibtn hide-btn" onclick="toggleHide()"><span class="eye-open"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></span><span class="eye-closed" style="display:none"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></span></div>
+          <div class="ibtn" onclick="toast('🔔','Sem notificações')">🔔</div>
+        </div>
+      </div>
+
+      <div class="page-content">
+
+        <!-- Hero balance -->
+        <div class="hero-card">
+          <div class="hero-top">
+            <div class="hero-label">
+              <div class="hero-live"></div>
+              Saldo disponível
+            </div>
+            <div class="hero-source">Cora Bank · Open Finance · agora</div>
+          </div>
+          <div class="hero-amount"><span class="currency">R$</span><span class="val" data-raw="28647">28.647<span class="cents">,39</span></span></div>
+
+          <div class="hero-stats" style="grid-template-columns:1fr 1fr 1fr">
+            <div class="hs-item">
+              <div class="hs-label">ENTRADAS FEV</div>
+              <div class="hs-val green val" data-raw="32094">R$ 32.094<span class="cents">,88</span></div>
+            </div>
+            <div class="hs-item">
+              <div class="hs-label">SAÍDAS FEV</div>
+              <div class="hs-val red val" data-raw="8293">R$ 8.293<span class="cents">,41</span></div>
+            </div>
+            <div class="hs-item">
+              <div class="hs-label">A RECEBER</div>
+              <div class="hs-val amber val" data-raw="13480">R$ 13.480<span class="cents">,15</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Alert banner — contextual (só ME/EPP) -->
+        <div class="alert-banner" id="frAlert" onclick="switchPage('prolabore')">
+          <div class="ab-icon">⚡</div>
+          <div class="ab-body">
+            <div class="ab-title">Ajuste o Fator R e economize</div>
+            <div class="ab-desc">Aumentando o pró-labore, você economiza <strong style="color:var(--amber)">R$ 890/mês</strong></div>
+          </div>
+          <div class="ab-arrow">›</div>
+        </div>
+
+        <!-- Quick actions -->
+        <div class="qa-row" id="qaRow">
+          <div class="qa-btn" onclick="openSheet('sheet-nf')">
+            <div class="qa-ico" style="background:var(--accent-d)">📄</div>
+            <div class="qa-lbl">Nova Nota</div>
+          </div>
+          <div class="qa-btn" onclick="switchPage('financeiro');setFtab('receber')">
+            <div class="qa-ico" style="background:var(--green-d)">💰</div>
+            <div class="qa-lbl">A Receber</div>
+          </div>
+          <div class="qa-btn" onclick="switchPage('impostos');toast('🧾','DAS: código copiado')">
+            <div class="qa-ico" style="background:var(--amber-d)">🧾</div>
+            <div class="qa-lbl">Pagar DAS</div>
+          </div>
+          <div class="qa-btn" onclick="toast('📊','Relatório gerado em PDF')">
+            <div class="qa-ico" style="background:var(--red-d)">📊</div>
+            <div class="qa-lbl">Relatório</div>
+          </div>
+          <div class="qa-btn" onclick="switchPage('prolabore')">
+            <div class="qa-ico" style="background:rgba(0,214,143,.1)">⚡</div>
+            <div class="qa-lbl">Fator R</div>
+          </div>
+          <div class="qa-btn" onclick="switchPage('financeiro');setFtab('pagar')">
+            <div class="qa-ico" style="background:rgba(255,77,106,.1)">📤</div>
+            <div class="qa-lbl">A Pagar</div>
+          </div>
+        </div>
+
+        <!-- Obrigações -->
+        <div class="slabel">Obrigações do mês</div>
+        <div class="card">
+          <div class="obl-item" onclick="switchPage('impostos')">
+            <div class="obl-dot" style="background:var(--red)"></div>
+            <div class="obl-body">
+              <div class="obl-name">DAS Simples Nacional</div>
+              <div class="obl-when" style="color:var(--red)">Vence em 3 dias — 20/02</div>
+            </div>
+            <div class="obl-val val" style="color:var(--red)" data-raw="1847">R$ 1.847<span class="cents">,52</span></div>
+          </div>
+          <div class="divider"></div>
+          <div class="obl-item" onclick="switchPage('impostos')">
+            <div class="obl-dot" style="background:var(--amber)"></div>
+            <div class="obl-body">
+              <div class="obl-name">ISS São Paulo</div>
+              <div class="obl-when" style="color:var(--amber)">Vence em 10 dias — 28/02</div>
+            </div>
+            <div class="obl-val val" style="color:var(--amber)" data-raw="314">R$ 314<span class="cents">,18</span></div>
+          </div>
+          <div class="divider"></div>
+          <div class="obl-item" onclick="toast('✅','DEFIS: em dia')">
+            <div class="obl-dot" style="background:var(--accent)"></div>
+            <div class="obl-body">
+              <div class="obl-name">DEFIS Anual 2024</div>
+              <div class="obl-when" style="color:var(--muted)">Vence 31/03 — 40 dias</div>
+            </div>
+            <div class="obl-val" style="color:var(--green)">—</div>
+          </div>
+        </div>
+
+        <!-- Simples Nacional -->
+        <div class="slabel" id="simpleslabel">Limite Simples Nacional <span style="font-size:9px;color:var(--accent);margin-left:4px">2025</span></div>
+        <div class="card" id="simplesCard">
+          <div class="simples-card">
+            <div class="sc-header">
+              <div>
+                <div class="sc-val"><span class="val" data-raw="170943">R$ 170.943<span class="cents">,72</span></span> faturados</div>
+                <div class="sc-sub">de R$ 4,8 mi disponíveis</div>
+              </div>
+              <div class="sc-pct val" data-raw="35.4">35<span class="cents">,4%</span></div>
+            </div>
+            <div class="sc-track">
+              <div class="sc-fill" id="sBar" style="width:0"></div>
+            </div>
+            <div class="sc-footer">
+              <span class="sc-foot-item">0</span>
+              <span class="sc-foot-item val" data-raw="35.4pct" style="color:var(--accent)">▲ 35,4% utilizado</span>
+              <span class="sc-foot-item">R$ 4,8M</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fluxo de caixa — painel executivo -->
+        <div class="slabel">Caixa · Fevereiro 2025</div>
+        <div class="card">
+          <div class="cfe-wrap" id="cfePanel">
+            <!-- Resultado líquido do mês -->
+            <div class="cfe-result-row">
+              <div class="cfe-result-left">
+                <div class="cfe-result-label">RESULTADO DO MÊS</div>
+                <div class="cfe-result-val pos val" data-raw="23801">+ R$ 23.801<span class="cents">,47</span></div>
+                <div class="cfe-result-sub">
+                  margem de <strong class="val" data-raw="74.2pct" style="color:var(--text)">74,2%</strong>
+                </div>
+              </div>
+              <div class="cfe-trend-badge up">↑ vs jan</div>
+            </div>
+
+            <!-- Entrada e saída com barras -->
+            <div class="cfe-rows">
+              <div class="cfe-row">
+                <div class="cfe-row-header">
+                  <span class="cfe-row-label"><span class="cfe-row-dot" style="background:var(--green)"></span>ENTRADAS</span>
+                  <span class="cfe-row-val green val" data-raw="32094">R$ 32.094<span class="cents">,88</span></span>
+                </div>
+                <div class="cfe-track"><div class="cfe-fill" id="cfeIncFill" style="width:0;background:var(--green)"></div></div>
+              </div>
+              <div class="cfe-row">
+                <div class="cfe-row-header">
+                  <span class="cfe-row-label"><span class="cfe-row-dot" style="background:var(--red)"></span>SAÍDAS</span>
+                  <span class="cfe-row-val red val" data-raw="8293">R$ 8.293<span class="cents">,41</span></span>
+                </div>
+                <div class="cfe-track"><div class="cfe-fill" id="cfeExpFill" style="width:0;background:var(--red)"></div></div>
+              </div>
+            </div>
+
+            <div class="cfe-divider"></div>
+
+            <!-- Sparkline — resultado dos últimos 5 meses -->
+            <div class="cfe-history-label">RESULTADO LÍQUIDO · ÚLTIMOS 5 MESES</div>
+            <div class="cfe-sparkline" id="cfeSparkline"></div>
+
+            <!-- Dias de reserva -->
+            <div class="cfe-reserve">
+              <div class="cfe-reserve-left">
+                <div class="cfe-reserve-label">RESERVA DE CAIXA</div>
+                <div class="cfe-reserve-val val" data-raw="104">104 dias</div>
+              </div>
+              <div class="cfe-reserve-sub val" data-raw="reserve-sub">R$ 28.647,39 disponível<br>Média gasto/dia: R$ 276,13</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Próximas saídas -->
+        <div class="slabel">Próximas saídas · 14 dias</div>
+        <div class="upcoming-card">
+          <div class="upcoming-hero">
+            <div class="upcoming-hero-left">
+              <div class="upcoming-hero-label">TOTAL PREVISTO</div>
+              <div class="upcoming-hero-val val" data-raw="5684">R$ 5.684<span class="cents">,89</span></div>
+              <div class="upcoming-hero-sub">saindo do caixa nos próximos 14 dias</div>
+            </div>
+          </div>
+
+          <div class="upcoming-item" onclick="switchPage('impostos')">
+            <div class="upcoming-urgency" style="background:var(--red)"></div>
+            <div class="upcoming-content">
+              <div class="upcoming-body">
+                <div class="upcoming-name">DAS Simples Nacional</div>
+                <div class="upcoming-meta">20/02 · Imposto federal</div>
+              </div>
+              <div class="upcoming-right">
+                <div class="upcoming-val val" style="color:var(--red)" data-raw="1847">R$ 1.847<span class="cents">,52</span></div>
+                <div class="upcoming-days-tag urgent">3 dias</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="upcoming-item" onclick="switchPage('financeiro');setFtab('pagar')">
+            <div class="upcoming-urgency" style="background:var(--amber)"></div>
+            <div class="upcoming-content">
+              <div class="upcoming-body">
+                <div class="upcoming-name">Nubank Cartão PJ</div>
+                <div class="upcoming-meta">25/02 · Fatura do cartão</div>
+              </div>
+              <div class="upcoming-right">
+                <div class="upcoming-val val" data-raw="2183">R$ 2.183<span class="cents">,67</span></div>
+                <div class="upcoming-days-tag soon">5 dias</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="upcoming-item" onclick="switchPage('impostos')">
+            <div class="upcoming-urgency" style="background:var(--amber)"></div>
+            <div class="upcoming-content">
+              <div class="upcoming-body">
+                <div class="upcoming-name">ISS São Paulo</div>
+                <div class="upcoming-meta">28/02 · Imposto municipal</div>
+              </div>
+              <div class="upcoming-right">
+                <div class="upcoming-val val" data-raw="314">R$ 314<span class="cents">,18</span></div>
+                <div class="upcoming-days-tag soon">8 dias</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="upcoming-item" onclick="switchPage('financeiro');setFtab('pagar')">
+            <div class="upcoming-urgency" style="background:var(--border2)"></div>
+            <div class="upcoming-content">
+              <div class="upcoming-body">
+                <div class="upcoming-name">Coworking Labs SP</div>
+                <div class="upcoming-meta">05/03 · Aluguel mensal</div>
+              </div>
+              <div class="upcoming-right">
+                <div class="upcoming-val val" data-raw="1340">R$ 1.340<span class="cents">,19</span></div>
+                <div class="upcoming-days-tag ok">13 dias</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="height:8px"></div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         NOTAS FISCAIS
+    ══════════════════════════════════════ -->
+    <div id="page-notas" class="page">
+      <div class="phdr">
+        <span class="phdr-title">Notas Fiscais</span>
+        <div class="phdr-right">
+          <div class="ibtn hide-btn" onclick="toggleHide()"><span class="eye-open"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></span><span class="eye-closed" style="display:none"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></span></div>
+          <div class="ibtn accent" onclick="openSheet('sheet-nf')">＋</div>
+        </div>
+      </div>
+
+      <div class="page-content">
+        <div class="search-wrap">
+          <span class="search-ico">◎</span>
+          <input type="text" class="search-input" placeholder="Buscar cliente ou número..." id="nfSearch" oninput="filterNFs(this.value)">
+        </div>
+
+        <div class="tab-row">
+          <div class="tab on" onclick="setNFTab('todas',this)">Todas (5)</div>
+          <div class="tab" onclick="setNFTab('pagas',this)">Pagas</div>
+          <div class="tab" onclick="setNFTab('pendentes',this)">Pendentes</div>
+          <div class="tab" onclick="setNFTab('recorrentes',this)">Recorrentes</div>
+        </div>
+
+        <div id="nfList"></div>
+        <div class="fab" onclick="openSheet('sheet-nf')">+</div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         FINANCEIRO
+    ══════════════════════════════════════ -->
+    <div id="page-financeiro" class="page">
+      <div class="phdr">
+        <span class="phdr-title">Financeiro</span>
+        <div class="ibtn hide-btn" onclick="toggleHide()"><span class="eye-open"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></span><span class="eye-closed" style="display:none"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></span></div>
+      </div>
+
+      <div class="page-content">
+        <div class="fin-stats">
+          <div class="fin-stat-card">
+            <div class="fsc-label">ENTRADAS</div>
+            <div class="fsc-val green val" data-raw="32094">32,1K</div>
+          </div>
+          <div class="fin-stat-card">
+            <div class="fsc-label">SAÍDAS</div>
+            <div class="fsc-val red val" data-raw="8293">8,3K</div>
+          </div>
+          <div class="fin-stat-card">
+            <div class="fsc-label">SALDO</div>
+            <div class="fsc-val accent val" data-raw="23801">23,8K</div>
+          </div>
+        </div>
+
+        <div class="slabel"></div>
+        <div class="ftabs">
+          <div class="ftab on" onclick="setFtab('extrato',this)">Extrato</div>
+          <div class="ftab" onclick="setFtab('fluxo',this)">Fluxo</div>
+          <div class="ftab" onclick="setFtab('pagar',this)">A Pagar</div>
+          <div class="ftab" onclick="setFtab('receber',this)">A Receber</div>
+        </div>
+
+        <div class="fpanel on" id="fp-extrato"><div id="extratoList"></div></div>
+        <div class="fpanel" id="fp-fluxo">
+          <div class="card">
+            <div class="cf-chart">
+              <div class="cf-bars" id="cfBars"></div>
+              <div class="cf-lbls" id="cfLbls"></div>
+              <div class="cf-legend">
+                <div class="cf-leg in">Entradas</div>
+                <div class="cf-leg out">Saídas</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="fpanel" id="fp-pagar">
+          <div class="card"><div id="pagarList"></div></div>
+        </div>
+        <div class="fpanel" id="fp-receber">
+          <div class="card"><div id="receberList"></div></div>
+        </div>
+
+        <div style="height:8px"></div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         IMPOSTOS
+    ══════════════════════════════════════ -->
+    <div id="page-impostos" class="page">
+      <div class="phdr">
+        <span class="phdr-title">Impostos</span>
+        <div class="ibtn hide-btn" onclick="toggleHide()"><span class="eye-open"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></span><span class="eye-closed" style="display:none"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></span></div>
+      </div>
+
+      <div class="page-content">
+        <div class="tax-hero">
+          <div class="tax-hero-icon">🧾</div>
+          <div>
+            <div class="tax-hero-label">TOTAL FEVEREIRO 2025</div>
+            <div class="tax-hero-val val" data-raw="2161">R$ 2.161<span class="cents">,70</span></div>
+            <div class="tax-hero-warn">⚠ DAS vence em 3 dias</div>
+          </div>
+        </div>
+
+        <div class="slabel">Guias do mês</div>
+        <div class="card"><div id="taxList"></div></div>
+
+        <div class="slabel">Calendário fiscal</div>
+        <div class="card" style="padding:14px">
+          <div class="cal-header">
+            <span class="cal-month" id="calMonth">Fevereiro 2025</span>
+            <div class="cal-nav">
+              <div class="cal-btn" onclick="shiftMonth(-1)">‹</div>
+              <div class="cal-btn" onclick="shiftMonth(1)">›</div>
+            </div>
+          </div>
+          <div class="cal-grid" id="calGrid"></div>
+          <div class="cal-key">
+            <div class="cal-key-item"><div class="cal-dot" style="background:var(--red)"></div>Urgente</div>
+            <div class="cal-key-item"><div class="cal-dot" style="background:var(--amber)"></div>Próximo</div>
+            <div class="cal-key-item"><div class="cal-dot" style="background:var(--green)"></div>Pago</div>
+          </div>
+        </div>
+
+        <div class="slabel">Saúde fiscal · CND</div>
+        <div class="card">
+          <div class="cnd-row">
+            <div class="cnd-ico" style="background:var(--accent-d);border:1px solid rgba(123,97,255,.2)">🏛️</div>
+            <div class="cnd-body">
+              <div class="cnd-name">Receita Federal</div>
+              <div class="cnd-since">Verificado hoje, 08:30</div>
+            </div>
+            <div class="cnd-status" style="color:var(--green)">REGULAR</div>
+          </div>
+          <div class="divider"></div>
+          <div class="cnd-row">
+            <div class="cnd-ico" style="background:var(--accent-d);border:1px solid rgba(123,97,255,.2)">🏙️</div>
+            <div class="cnd-body">
+              <div class="cnd-name">Prefeitura SP</div>
+              <div class="cnd-since">Verificado ontem, 18:00</div>
+            </div>
+            <div class="cnd-status" style="color:var(--green)">REGULAR</div>
+          </div>
+          <div class="divider"></div>
+          <div class="cnd-row">
+            <div class="cnd-ico" style="background:var(--amber-d);border:1px solid var(--amber-b)">⚡</div>
+            <div class="cnd-body">
+              <div class="cnd-name">FGTS / CEF</div>
+              <div class="cnd-since">Verificação manual necessária</div>
+            </div>
+            <div class="cnd-status" style="color:var(--amber)">PENDENTE</div>
+          </div>
+        </div>
+
+        <div style="height:8px"></div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         PRÓ-LABORE / FATOR R (contextual)
+    ══════════════════════════════════════ -->
+    <div id="page-prolabore" class="page">
+      <div class="phdr">
+        <span class="phdr-title" id="plPageTitle">Pró-labore</span>
+        <div class="ibtn hide-btn" onclick="toggleHide()"><span class="eye-open"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></span><span class="eye-closed" style="display:none"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></span></div>
+      </div>
+
+      <div class="page-content">
+
+        <!-- MEI content -->
+        <div id="pl-mei-content" style="display:none">
+          <div class="mei-notice">
+            <div class="mei-notice-icon">🪴</div>
+            <div class="mei-notice-title">MEI não tem pró-labore</div>
+            <div class="mei-notice-desc">Como MEI, você não é obrigado a pagar pró-labore. A retirada é chamada de <strong style="color:var(--text)">pró-labore voluntário</strong> e não gera encargos adicionais — mas você continua devendo o DAS mensal.</div>
+          </div>
+
+          <div class="mei-limit-card">
+            <div class="mei-limit-label">LIMITE ANUAL MEI 2025</div>
+            <div class="mei-limit-val val" data-raw="81000">R$ 81.000<span class="cents">,00</span></div>
+            <div class="mei-limit-sub" style="margin-bottom:10px">Faturamento acumulado: <strong class="val" data-raw="28000" style="color:var(--text)">R$ 28.000,00</strong> <span class="val" data-raw="34.6pct">(34,6%)</span></div>
+            <div class="sc-track" style="margin:0 0 8px">
+              <div class="sc-fill" style="width:34.6%; background: linear-gradient(90deg, var(--green), rgba(0,214,143,.5))"></div>
+            </div>
+            <div class="mei-limit-sub">Restam R$ 53.000 para o limite do ano</div>
+          </div>
+
+          <div class="slabel">DAS Mensal fixo</div>
+          <div class="card">
+            <div class="tax-row" onclick="this.classList.toggle('open')">
+              <div class="tr-top">
+                <div class="tr-ico" style="background:var(--amber-d);border:1px solid var(--amber-b)">🧾</div>
+                <div class="tr-info">
+                  <div class="tr-name">DAS-MEI</div>
+                  <div class="tr-due" style="color:var(--red)">Vence 20/02 · 3 dias</div>
+                </div>
+                <div class="tr-val val" data-raw="71.60">R$ 71<span class="cents">,60</span></div>
+              </div>
+              <div class="tr-track"><div class="tr-fill" style="background:var(--amber);width:88%"></div></div>
+              <div class="tr-detail">
+                <div class="trd-grid">
+                  <div class="trd"><div class="trd-lbl">INSS</div><div class="trd-val val" data-raw="66">R$ 66<span class="cents">,00</span></div></div>
+                  <div class="trd"><div class="trd-lbl">ISS</div><div class="trd-val val" data-raw="5">R$ 5<span class="cents">,00</span></div></div>
+                  <div class="trd"><div class="trd-lbl">IRPJ/CSLL</div><div class="trd-val">—</div></div>
+                  <div class="trd"><div class="trd-lbl">Atividade</div><div class="trd-val">Serviços</div></div>
+                </div>
+                <button class="tr-pay-btn" onclick="event.stopPropagation();toast('💳','Código copiado!')">Gerar boleto / PIX</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ME/EPP content -->
+        <div id="pl-full-content" style="display:none">
+          <div class="pl-hero">
+            <div class="pl-label">PRÓ-LABORE ATUAL</div>
+            <div class="pl-amount val" data-raw="4000">R$ 4.000<span class="cents">,33</span></div>
+            <div class="pl-net">Líquido após descontos: <span class="val" data-raw="3560">R$ 3.560<span class="cents">,78</span></span></div>
+            <div class="pl-chips">
+              <div class="pl-chip val" data-raw="440">INSS: R$ 440<span class="cents">,55</span></div>
+              <div class="pl-chip">IRRF: Isento</div>
+              <div class="pl-chip warn val" data-raw="12.5pct">⚠ Fator R: 12,5%</div>
+            </div>
+          </div>
+
+          <div class="fr-indicator" id="frIndicator">
+            <div class="fr-pct warn val" id="frPct" data-raw="12.5">12,5%</div>
+            <div class="fr-info">
+              <div class="fr-title" id="frTitle">Você está no Anexo V</div>
+              <div class="fr-desc" id="frDesc">Fator R abaixo de 28% — alíquota mais alta</div>
+            </div>
+            <div class="fr-arrow" id="frArrow">⚠️</div>
+          </div>
+
+          <div class="slabel">Simulador Fator R</div>
+          <div class="sim-panel">
+            <div class="sim-panel-title">Simule o pró-labore ideal</div>
+            <div class="sim-panel-sub">Arraste para ver o impacto no seu imposto</div>
+            <div class="sim-current val" id="simVal" data-raw="4000">R$ 4.000<span class="cents">,33</span></div>
+            <input type="range" min="1500" max="20000" step="250" value="4000" oninput="updateSim(this.value)">
+            <div class="sim-scale"><span>R$ 1.500</span><span>R$ 20.000</span></div>
+          </div>
+
+          <div class="sim-result warn" id="simResult">
+            <div class="sim-r-ico">⚠️</div>
+            <div>
+              <div class="sim-r-title" id="simTitle">Anexo V — alíquota alta</div>
+              <div class="sim-r-desc" id="simDesc">Fator R abaixo de 28%. Imposto maior sobre faturamento.</div>
+            </div>
+          </div>
+
+          <div class="sim-saving">
+            <div class="ss-label">Economia estimada / mês</div>
+            <div class="ss-val val" id="simSav" data-raw="0">—</div>
+          </div>
+
+          <div class="slabel">Histórico de pagamentos</div>
+          <div class="card"><div id="plHist"></div></div>
+        </div>
+
+        <div style="height:8px"></div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         PERFIL
+    ══════════════════════════════════════ -->
+    <div id="page-perfil" class="page">
+      <div class="phdr">
+        <span class="phdr-title">Perfil</span>
+      </div>
+
+      <div class="page-content">
+
+        <!-- Botão de tipo (clicável só para preview — em prod seria display only) -->
+        <div class="type-selector-row">
+          <span class="type-selector-label">Visualizando como:</span>
+          <div class="type-btn-group">
+            <button class="type-pill" data-type="MEI" onclick="selectCompanyType('MEI',this)">MEI</button>
+            <button class="type-pill" data-type="ME" onclick="selectCompanyType('ME',this)">ME</button>
+            <button class="type-pill active" data-type="EPP" onclick="selectCompanyType('EPP',this)">EPP</button>
+          </div>
+        </div>
+
+        <!-- Card de identidade da empresa -->
+        <div class="id-card">
+          <div class="id-card-stripe"></div>
+          <div class="id-card-inner">
+            <div class="id-card-top">
+              <div class="id-logo">
+                <span style="font-family:var(--f-mono);font-size:9px;color:rgba(255,176,32,.6);letter-spacing:2px">CONTÁBIL</span>
+              </div>
+              <div class="id-chip">
+                <div class="id-chip-line"></div>
+                <div class="id-chip-line"></div>
+                <div class="id-chip-line"></div>
+              </div>
+            </div>
+
+            <div class="id-company-name" id="idCompanyName">Fantinny Entretenimentos</div>
+            <div class="id-cnpj" id="idCnpj">CNPJ · 12.345.678/0001-90</div>
+
+            <div class="id-grid">
+              <div class="id-field">
+                <div class="id-field-label">PORTE</div>
+                <div class="id-field-val" id="idPorte">EPP</div>
+              </div>
+              <div class="id-field">
+                <div class="id-field-label">REGIME</div>
+                <div class="id-field-val" id="idRegime">Simples Nacional</div>
+              </div>
+              <div class="id-field">
+                <div class="id-field-label">FATURAMENTO 2024</div>
+                <div class="id-field-val val" data-raw="312000">R$ 312.000<span class="cents">,88</span></div>
+              </div>
+              <div class="id-field">
+                <div class="id-field-label">MUNICÍPIO</div>
+                <div class="id-field-val">São Paulo · SP</div>
+              </div>
+            </div>
+
+            <div class="id-card-footer">
+              <div class="id-since">Ativo desde Jan 2021</div>
+              <div class="id-type-badge" id="idTypeBadge">EPP</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="slabel">Aparência</div>
+        <div class="card">
+          <div class="theme-toggle-row">
+            <div>
+              <div class="theme-toggle-label">Tema</div>
+              <div class="theme-toggle-sub">Escolha como o app aparece</div>
+            </div>
+            <div class="theme-switcher">
+              <button class="theme-btn active" id="btn-dark" onclick="setTheme('dark')">◐ DARK</button>
+              <button class="theme-btn" id="btn-light" onclick="setTheme('light')">◑ LIGHT</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="slabel">Configurações</div>
+        <div class="card">
+          <div class="profile-option" onclick="toast('🔔','Configurar notificações')">
+            <div class="po-icon">🔔</div>
+            <div class="po-body"><div class="po-label">Notificações</div><div class="po-val">Ativadas</div></div>
+            <div class="po-arrow">›</div>
+          </div>
+          <div class="divider"></div>
+          <div class="profile-option" onclick="toggleHide()">
+            <div class="po-icon">👁</div>
+            <div class="po-body"><div class="po-label">Ocultar valores</div><div class="po-val">Toque para esconder saldos</div></div>
+            <div class="po-arrow">›</div>
+          </div>
+          <div class="divider"></div>
+          <div class="profile-option" onclick="toast('🤝','Conectar contador')">
+            <div class="po-icon">🤝</div>
+            <div class="po-body"><div class="po-label">Contador parceiro</div><div class="po-val">Compartilhar acesso</div></div>
+            <div class="po-arrow">›</div>
+          </div>
+          <div class="divider"></div>
+          <div class="profile-option" onclick="toast('📄','Exportando dados...')">
+            <div class="po-icon">📄</div>
+            <div class="po-body"><div class="po-label">Exportar dados</div><div class="po-val">Relatório PDF ou CSV</div></div>
+            <div class="po-arrow">›</div>
+          </div>
+        </div>
+
+        <div style="height:8px"></div>
+      </div>
+    </div>
+
+  </div><!-- /screen -->
+
+  <!-- Bottom nav -->
+  <div class="nav" id="mainNav">
+    <div class="ni" id="ni-home"      onclick="switchPage('home')">      <div class="ni-icon">⌂</div><div class="ni-label">INÍCIO</div></div>
+    <div class="ni" id="ni-notas"     onclick="switchPage('notas')">     <div class="ni-icon">◻</div><div class="ni-label">NOTAS</div><div class="ni-badge" id="notas-badge"></div></div>
+    <div class="ni" id="ni-financeiro" onclick="switchPage('financeiro')"><div class="ni-icon">⊞</div><div class="ni-label">FINANÇAS</div></div>
+    <div class="ni" id="ni-impostos"  onclick="switchPage('impostos')">  <div class="ni-icon">◈</div><div class="ni-label">IMPOSTOS</div><div class="ni-badge" id="impostos-badge"></div></div>
+    <div class="ni" id="ni-prolabore" onclick="switchPage('prolabore')"> <div class="ni-icon">⚡</div><div class="ni-label" id="niPlLabel">FATOR R</div></div>
+    <div class="ni" id="ni-perfil"    onclick="switchPage('perfil')">    <div class="ni-icon">◎</div><div class="ni-label">PERFIL</div></div>
+  </div>
+</div><!-- /phone -->
+
+<!-- Modal: Nova NF -->
+<div class="overlay" id="sheet-nf" onclick="closeSheetOutside(event,'sheet-nf')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Nova Nota Fiscal</div>
+    <div class="field">
+      <div class="flabel">TIPO</div>
+      <select class="finput">
+        <option>NFS-e (Serviços)</option>
+        <option>Invoice Internacional (USD)</option>
+        <option>Invoice Internacional (EUR)</option>
+      </select>
+    </div>
+    <div class="field">
+      <div class="flabel">CLIENTE</div>
+      <select class="finput">
+        <option>Nubank S.A.</option>
+        <option>Stripe Inc.</option>
+        <option>Accenture Brasil</option>
+        <option>+ Novo cliente</option>
+      </select>
+    </div>
+    <div class="field">
+      <div class="flabel">VALOR (R$)</div>
+      <input class="finput" type="number" placeholder="0,00">
+    </div>
+    <div class="field">
+      <div class="flabel">DESCRIÇÃO</div>
+      <input class="finput" type="text" placeholder="Desenvolvimento de software — fev/25">
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 0 18px">
+      <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+      <span style="font-family:var(--f-mono);font-size:10px;color:var(--muted);letter-spacing:.5px">EMISSÃO RECORRENTE MENSAL</span>
+    </div>
+    <button class="btn-primary" onclick="emitirNF()">Emitir Nota Fiscal</button>
+    <button class="btn-ghost" onclick="closeSheet('sheet-nf')">Cancelar</button>
+  </div>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/company.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/pages.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/main.js"></script>
+
+  <script>
+    function setTheme(mode) {
+      document.body.setAttribute('data-theme', mode);
+      document.getElementById('btn-dark').classList.toggle('active', mode === 'dark');
+      document.getElementById('btn-light').classList.toggle('active', mode === 'light');
+      localStorage.setItem('theme', mode);
+    }
+    // Init on load
+    (function() {
+      const saved = localStorage.getItem('theme') || 'dark';
+      document.body.setAttribute('data-theme', saved);
+      window.addEventListener('DOMContentLoaded', function() {
+        const btnDark = document.getElementById('btn-dark');
+        const btnLight = document.getElementById('btn-light');
+        if (btnDark && btnLight) {
+          btnDark.classList.toggle('active', saved === 'dark');
+          btnLight.classList.toggle('active', saved === 'light');
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
