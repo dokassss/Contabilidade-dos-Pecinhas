@@ -3,11 +3,7 @@
 ════════════════════ */
 const NFs = [
   { id:'#2849', client:'Nubank S.A.',     ico:'🏦', date:'14/02/25', val:'R$ 18.750,37', raw:18750, status:'paid',    rec:true,  type:'NFS-e' },
-<<<<<<< HEAD
-  { id:'#091',  client:'Stripe Inc.',      ico:'💳', date:'01/02/25', val:'$4.200',   raw:4200,  status:'paid',    rec:false, type:'INVOICE USD' },
-=======
   { id:'#091',  client:'Stripe Inc.',      ico:'💳', date:'01/02/25', val:'$4.200,00',   raw:4200,  status:'paid',    rec:false, type:'INVOICE USD' },
->>>>>>> b2ea1f6 (fix: valores monetários com centavos em todos os lugares)
   { id:'#2848', client:'Accenture Brasil', ico:'💼', date:'01/02/25', val:'R$ 13.480,15',raw:13480, status:'pending', rec:false, type:'NFS-e' },
   { id:'#2840', client:'BTG Pactual',      ico:'🏛', date:'05/01/25', val:'R$ 22.300,82',raw:22300, status:'overdue', rec:false, type:'NFS-e' },
   { id:'#2839', client:'iFood Tech',       ico:'🍔', date:'01/01/25', val:'R$ 17.650,64',raw:17650, status:'paid',    rec:true,  type:'NFS-e' },
@@ -40,11 +36,7 @@ const PAGAR = [
 ];
 const RECEBER = [
   { ico:'💼', name:'Accenture Brasil', when:'28/02 — NFS-e #2848', val:'13.480,15', color:'var(--green)', done:false },
-<<<<<<< HEAD
-  { ico:'💳', name:'Stripe Inc. USD',  when:'A confirmar — #092',  val:'$4.200', color:'var(--soft)',  done:false },
-=======
   { ico:'💳', name:'Stripe Inc. USD',  when:'A confirmar — #092',  val:'$4.200,00', color:'var(--soft)',  done:false },
->>>>>>> b2ea1f6 (fix: valores monetários com centavos em todos os lugares)
 ];
 const IMPOSTOS = [
   { ico:'🧾', name:'DAS Simples Nacional', due:'20/02 · 3 DIAS', val:'R$ 1.847,52', color:'var(--red)',   bg:'var(--red-d)',   border:'var(--red-b)',   fill:88,
