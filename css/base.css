@@ -29,11 +29,28 @@ html, body {
   .phone::before { display: none !important; }
   .island { display: none !important; }
   .status { display: none !important; }
-  .screen { margin-top: 0 !important; height: 100% !important; }
+  .screen {
+    margin-top: 0 !important;
+    /* Safari: usa calc para reservar espaço da nav */
+    height: calc(100% - 56px) !important;
+    /* Fallback com safe-area */
+    height: calc(100% - max(56px, calc(40px + env(safe-area-inset-bottom)))) !important;
+  }
   /* Nav: altura automática + padding inferior para home indicator */
   .nav {
+    /* Safari/iOS: fixa na base da tela — a abordagem mais confiável */
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 1000 !important;
     height: auto !important;
+    min-height: 56px !important;
     padding-top: 10px !important;
+    padding-bottom: 16px !important;
+    padding-bottom: constant(safe-area-inset-bottom) !important;
+    padding-bottom: env(safe-area-inset-bottom) !important;
+    /* Se env() retornar 0 (sem notch), garante padding mínimo */
     padding-bottom: max(16px, env(safe-area-inset-bottom)) !important;
   }
   .page-content {
@@ -102,20 +119,37 @@ html, body {
 
 /* Bottom nav */
 .nav {
-  height: auto; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: space-around;
+  flex-shrink: 0;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-justify-content: space-around;
+  justify-content: space-around;
   padding: 10px 4px 14px;
   background: linear-gradient(0deg, var(--surface) 0%, rgba(17,17,24,.95) 100%);
   border-top: 1px solid var(--border);
+  /* Safari: garante que a nav não colapse */
+  width: 100%;
+  min-height: 56px;
 }
 .ni {
-  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+  -webkit-align-items: center;
+  align-items: center;
+  gap: 4px;
   cursor: pointer; padding: 6px 12px; border-radius: 12px;
   transition: all .18s ease; position: relative;
-  min-width: 60px;
+  min-width: 44px;
+  /* Safari: evita colapso */
+  -webkit-flex-shrink: 0;
+  flex-shrink: 0;
 }
 .ni:active { transform: scale(.9); }
-.ni-icon { font-size: 18px; color: var(--muted); transition: color .18s; line-height: 1; }
+.ni-icon { font-size: 18px; color: var(--muted); transition: color .18s; line-height: 1; width: 20px; height: 20px; display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; -webkit-justify-content: center; justify-content: center; }
 .ni-label { font-family: var(--f-mono); font-size: 8px; color: var(--muted); letter-spacing: .5px; transition: color .18s; }
 .ni.active .ni-icon { color: var(--accent); filter: drop-shadow(0 0 6px var(--accent-g)); }
 .ni.active .ni-label { color: var(--accent); }
@@ -527,6 +561,12 @@ body[data-theme="light"] {
 .ni-icon svg {
   stroke-width: 1.8;
   display: block;
+  /* Safari: SVG precisa de dimensões explícitas para não colapsar */
+  width: 20px;
+  height: 20px;
+  overflow: visible;
+  -webkit-flex-shrink: 0;
+  flex-shrink: 0;
 }
 .ni.active .ni-icon svg {
   filter: drop-shadow(0 0 5px var(--accent-g));
