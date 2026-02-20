@@ -21,20 +21,132 @@
 </div>
 <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
 
-<div id="login-screen" style="display:none;position:fixed;inset:0;z-index:9998;background:var(--base);align-items:center;justify-content:center;">
-  <div style="width:100%;max-width:340px;padding:32px 24px;background:var(--card);border:1px solid var(--border1);border-radius:20px;display:flex;flex-direction:column;gap:16px;">
+<div id="login-screen" style="display:none;position:fixed;inset:0;z-index:9998;background:var(--bg);align-items:center;justify-content:center;">
+  <div style="width:100%;max-width:340px;padding:32px 24px;background:var(--card);border:1px solid var(--border);border-radius:20px;display:flex;flex-direction:column;gap:16px;">
     <div style="text-align:center;margin-bottom:8px">
       <div style="font-size:32px">📊</div>
-      <div style="font-family:var(--f-mono);font-size:13px;font-weight:700;color:var(--text1);letter-spacing:1px;margin-top:6px">CONTÁBIL</div>
+      <div style="font-family:var(--f-mono);font-size:13px;font-weight:700;color:var(--bright);letter-spacing:1px;margin-top:6px">CONTÁBIL</div>
       <div style="font-family:var(--f-mono);font-size:10px;color:var(--muted);letter-spacing:2px">GESTÃO FINANCEIRA PJ</div>
     </div>
-    <input id="login-email" type="email" placeholder="seu@email.com" style="width:100%;padding:12px 14px;background:var(--lift);border:1px solid var(--border2);border-radius:10px;color:var(--text1);font-family:var(--f-mono);font-size:12px;box-sizing:border-box;outline:none;"/>
-    <input id="login-pass" type="password" placeholder="••••••••" style="width:100%;padding:12px 14px;background:var(--lift);border:1px solid var(--border2);border-radius:10px;color:var(--text1);font-family:var(--f-mono);font-size:12px;box-sizing:border-box;outline:none;" onkeydown="if(event.key==='Enter') doLogin()"/>
+    <input id="login-email" type="email" placeholder="seu@email.com" style="width:100%;padding:12px 14px;background:var(--lift);border:1px solid var(--border2);border-radius:10px;color:var(--bright);font-family:var(--f-mono);font-size:12px;box-sizing:border-box;outline:none;"/>
+    <input id="login-pass" type="password" placeholder="••••••••" style="width:100%;padding:12px 14px;background:var(--lift);border:1px solid var(--border2);border-radius:10px;color:var(--bright);font-family:var(--f-mono);font-size:12px;box-sizing:border-box;outline:none;" onkeydown="if(event.key==='Enter') doLogin()"/>
     <button onclick="doLogin()" style="width:100%;padding:13px;background:var(--accent);border:none;border-radius:10px;color:#fff;font-family:var(--f-mono);font-size:12px;font-weight:700;letter-spacing:1px;cursor:pointer;">ENTRAR</button>
-    <div style="display:flex;align-items:center;gap:10px"><div style="flex:1;height:1px;background:var(--border1)"></div><span style="font-family:var(--f-mono);font-size:10px;color:var(--muted)">OU</span><div style="flex:1;height:1px;background:var(--border1)"></div></div>
+    <div style="display:flex;align-items:center;gap:10px"><div style="flex:1;height:1px;background:var(--border)"></div><span style="font-family:var(--f-mono);font-size:10px;color:var(--muted)">OU</span><div style="flex:1;height:1px;background:var(--border)"></div></div>
     <button onclick="doRegister()" style="width:100%;padding:13px;background:transparent;border:1px solid var(--border2);border-radius:10px;color:var(--soft);font-family:var(--f-mono);font-size:12px;letter-spacing:1px;cursor:pointer;">CRIAR CONTA</button>
   </div>
 </div>  
+
+<!-- ══ ONBOARDING SCREEN ══════════════════════════════════ -->
+<div id="onboarding-screen" style="display:none;position:fixed;inset:0;z-index:9997;background:var(--bg);align-items:center;justify-content:center;padding:24px;">
+  <div style="width:100%;max-width:360px;display:flex;flex-direction:column;gap:0;">
+
+    <!-- Progresso -->
+    <div style="display:flex;gap:6px;margin-bottom:32px;">
+      <div id="ob-step-bar-1" style="flex:1;height:3px;border-radius:2px;background:var(--accent);transition:all .3s"></div>
+      <div id="ob-step-bar-2" style="flex:1;height:3px;border-radius:2px;background:var(--border2);transition:all .3s"></div>
+      <div id="ob-step-bar-3" style="flex:1;height:3px;border-radius:2px;background:var(--border2);transition:all .3s"></div>
+    </div>
+
+    <!-- Step 1: Boas-vindas + tipo -->
+    <div id="ob-step-1">
+      <div style="margin-bottom:28px;">
+        <div style="font-size:36px;margin-bottom:14px">👋</div>
+        <div style="font-family:var(--f-mono);font-size:11px;color:var(--accent);letter-spacing:2px;margin-bottom:6px">PASSO 1 DE 3</div>
+        <div style="font-size:22px;font-weight:800;color:var(--bright);line-height:1.2;margin-bottom:8px">Qual é o seu tipo de empresa?</div>
+        <div style="font-family:var(--f-mono);font-size:10px;color:var(--muted);">Isso define o regime tributário e os limites de faturamento.</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:28px;">
+        <label id="ob-card-mei" onclick="obSelectTipo('MEI')" style="display:flex;align-items:center;gap:14px;padding:16px;background:var(--card);border:2px solid var(--border);border-radius:14px;cursor:pointer;transition:all .18s;">
+          <div style="width:40px;height:40px;border-radius:10px;background:var(--accent-d);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">🌱</div>
+          <div>
+            <div style="font-weight:700;color:var(--text);font-size:13px">MEI</div>
+            <div style="font-family:var(--f-mono);font-size:9px;color:var(--muted);margin-top:2px">Microempreendedor · até R$ 81 mil/ano</div>
+          </div>
+        </label>
+        <label id="ob-card-me" onclick="obSelectTipo('ME')" style="display:flex;align-items:center;gap:14px;padding:16px;background:var(--card);border:2px solid var(--accent);border-radius:14px;cursor:pointer;transition:all .18s;">
+          <div style="width:40px;height:40px;border-radius:10px;background:var(--accent-d);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">🏪</div>
+          <div>
+            <div style="font-weight:700;color:var(--text);font-size:13px">ME — Microempresa</div>
+            <div style="font-family:var(--f-mono);font-size:9px;color:var(--muted);margin-top:2px">Simples Nacional · até R$ 360 mil/ano</div>
+          </div>
+        </label>
+        <label id="ob-card-epp" onclick="obSelectTipo('EPP')" style="display:flex;align-items:center;gap:14px;padding:16px;background:var(--card);border:2px solid var(--border);border-radius:14px;cursor:pointer;transition:all .18s;">
+          <div style="width:40px;height:40px;border-radius:10px;background:var(--accent-d);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">🏢</div>
+          <div>
+            <div style="font-weight:700;color:var(--text);font-size:13px">EPP — Empresa de Pequeno Porte</div>
+            <div style="font-family:var(--f-mono);font-size:9px;color:var(--muted);margin-top:2px">Simples Nacional · até R$ 4,8 mi/ano</div>
+          </div>
+        </label>
+      </div>
+      <input type="hidden" id="ob-porte" value="ME">
+      <button class="btn-primary" onclick="obNextStep(2)">Continuar →</button>
+    </div>
+
+    <!-- Step 2: Dados da empresa -->
+    <div id="ob-step-2" style="display:none;">
+      <div style="margin-bottom:28px;">
+        <div style="font-size:36px;margin-bottom:14px">🏢</div>
+        <div style="font-family:var(--f-mono);font-size:11px;color:var(--accent);letter-spacing:2px;margin-bottom:6px">PASSO 2 DE 3</div>
+        <div style="font-size:22px;font-weight:800;color:var(--bright);line-height:1.2;margin-bottom:8px">Dados da empresa</div>
+        <div style="font-family:var(--f-mono);font-size:10px;color:var(--muted);">Nome e CNPJ aparecem nos relatórios e notas fiscais.</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:28px;">
+        <div class="field" style="margin:0">
+          <div class="flabel">NOME DA EMPRESA</div>
+          <input id="ob-name" class="finput" type="text" placeholder="Ex: Fantinny Entretenimentos">
+        </div>
+        <div class="field" style="margin:0">
+          <div class="flabel">CNPJ</div>
+          <input id="ob-cnpj" class="finput" type="text" placeholder="00.000.000/0001-00" oninput="maskCNPJ(this)" maxlength="18">
+        </div>
+        <div class="field" style="margin:0">
+          <div class="flabel">MUNICÍPIO</div>
+          <input id="ob-cidade" class="finput" type="text" placeholder="Ex: São Paulo — SP">
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn-ghost" style="flex:1" onclick="obNextStep(1)">← Voltar</button>
+        <button class="btn-primary" style="flex:2" onclick="obNextStep(3)">Continuar →</button>
+      </div>
+    </div>
+
+    <!-- Step 3: Confirmação -->
+    <div id="ob-step-3" style="display:none;">
+      <div style="margin-bottom:28px;">
+        <div style="font-size:36px;margin-bottom:14px">✅</div>
+        <div style="font-family:var(--f-mono);font-size:11px;color:var(--accent);letter-spacing:2px;margin-bottom:6px">PASSO 3 DE 3</div>
+        <div style="font-size:22px;font-weight:800;color:var(--bright);line-height:1.2;margin-bottom:8px">Tudo certo!</div>
+        <div style="font-family:var(--f-mono);font-size:10px;color:var(--muted);">Confirme os dados antes de criar sua conta.</div>
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:12px;margin-bottom:28px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-family:var(--f-mono);font-size:9px;color:var(--muted);letter-spacing:1px">PORTE</span>
+          <span id="ob-confirm-porte" style="font-family:var(--f-mono);font-size:11px;font-weight:700;color:var(--accent)">ME</span>
+        </div>
+        <div style="height:1px;background:var(--border)"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-family:var(--f-mono);font-size:9px;color:var(--muted);letter-spacing:1px">EMPRESA</span>
+          <span id="ob-confirm-nome" style="font-size:12px;font-weight:600;color:var(--text);max-width:200px;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</span>
+        </div>
+        <div style="height:1px;background:var(--border)"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-family:var(--f-mono);font-size:9px;color:var(--muted);letter-spacing:1px">CNPJ</span>
+          <span id="ob-confirm-cnpj" style="font-family:var(--f-mono);font-size:11px;color:var(--soft)">—</span>
+        </div>
+        <div style="height:1px;background:var(--border)"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-family:var(--f-mono);font-size:9px;color:var(--muted);letter-spacing:1px">REGIME</span>
+          <span style="font-family:var(--f-mono);font-size:11px;color:var(--soft)" id="ob-confirm-regime">Simples Nacional</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn-ghost" style="flex:1" onclick="obNextStep(2)">← Voltar</button>
+        <button class="btn-primary" style="flex:2" onclick="cadastrarEmpresa()">Criar empresa 🚀</button>
+      </div>
+    </div>
+
+  </div>
+</div>
 
 <div class="phone" id="phone">
 
@@ -709,6 +821,9 @@
   </div>
 </div><!-- /phone -->
 
+<!-- Modal: Onboarding — Cadastro de Empresa -->
+
+
 <!-- Modal: Nova NF -->
 <div class="overlay" id="sheet-nf" onclick="closeSheetOutside(event,'sheet-nf')">
   <div class="sheet">
@@ -716,28 +831,27 @@
     <div class="sheet-title">Nova Nota Fiscal</div>
     <div class="field">
       <div class="flabel">TIPO</div>
-      <select class="finput">
-        <option>NFS-e (Serviços)</option>
-        <option>Invoice Internacional (USD)</option>
-        <option>Invoice Internacional (EUR)</option>
+      <select id="nf-tipo" class="finput">
+        <option value="NFS-e">NFS-e (Serviços)</option>
+        <option value="INVOICE-USD">Invoice Internacional (USD)</option>
+        <option value="INVOICE-EUR">Invoice Internacional (EUR)</option>
       </select>
     </div>
     <div class="field">
       <div class="flabel">CLIENTE</div>
-      <select class="finput">
-        <option>Nubank S.A.</option>
-        <option>Stripe Inc.</option>
-        <option>Accenture Brasil</option>
-        <option>+ Novo cliente</option>
-      </select>
+      <input id="nf-cliente" class="finput" type="text" placeholder="Nome do cliente">
+    </div>
+    <div class="field">
+      <div class="flabel">NÚMERO DA NOTA</div>
+      <input id="nf-numero" class="finput" type="text" placeholder="Ex: 2850">
     </div>
     <div class="field">
       <div class="flabel">VALOR (R$)</div>
-      <input class="finput" type="number" placeholder="0,00">
+      <input id="nf-valor" class="finput" type="number" placeholder="0,00">
     </div>
     <div class="field">
       <div class="flabel">DESCRIÇÃO</div>
-      <input class="finput" type="text" placeholder="Desenvolvimento de software — fev/25">
+      <input id="nf-descricao" class="finput" type="text" placeholder="Desenvolvimento de software — fev/25">
     </div>
     <div style="display:flex;align-items:center;gap:10px;padding:10px 0 18px">
       <div class="toggle on" onclick="this.classList.toggle('on')"></div>

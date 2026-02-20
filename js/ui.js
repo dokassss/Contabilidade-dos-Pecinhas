@@ -18,7 +18,7 @@ function toast(ico, msg) {
   if (ex) { ex.remove(); clearTimeout(_toastTimer); }
   const el = document.createElement('div'); el.className = 'toast';
   el.innerHTML = '<span class="toast-ico">'+ico+'</span><span class="toast-msg">'+msg+'</span>';
-  document.getElementById('phone').appendChild(el);
+  document.body.appendChild(el);
   _toastTimer = setTimeout(() => {
     el.style.transition = 'opacity .2s'; el.style.opacity = '0';
     setTimeout(() => el.remove(), 200);
@@ -48,4 +48,13 @@ function toggleHide() {
   document.querySelectorAll('.hide-btn .eye-closed').forEach(el => {
     el.style.display = _hidden ? '' : 'none';
   });
+}
+
+function maskCNPJ(input) {
+  let v = input.value.replace(/\D/g,"");
+  v = v.replace(/^(\d{2})(\d)/,"$1.$2");
+  v = v.replace(/^(\d{2})\.(\d{3})(\d)/,"$1.$2.$3");
+  v = v.replace(/\.(\d{3})(\d)/,".$1/$2");
+  v = v.replace(/(\d{4})(\d)/,"$1-$2");
+  input.value = v.slice(0,18);
 }

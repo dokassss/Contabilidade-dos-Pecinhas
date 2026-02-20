@@ -7,17 +7,25 @@ let _nfData       = [];
 let _extratoData  = [];
 let _impostosData = [];
 let _prolaboreData= [];
-let _justRegistered = false;
+let _authReady    = false;
 
 /* ── BOOT ── */
 document.addEventListener('DOMContentLoaded', async () => {
   showLoading(true);
+
+  // Listener de mudança de auth — ignora o disparo inicial (tratado abaixo)
   sbOnAuthChange(async (event, user) => {
-    if (_justRegistered) return; // evita initApp durante fluxo de registro
-    if (user) await initApp();
-    else { showLoading(false); showLoginScreen(true); }
+    if (!_authReady) return;
+    // Se onboarding já está visível, não fazer nada
+    const ob = document.getElementById('onboarding-screen');
+    if (ob && ob.style.display === 'flex') return;
+    if (event === 'SIGNED_IN') await initApp();
+    else if (event === 'SIGNED_OUT') { showLoginScreen(true); }
   });
+
+  // Verifica sessão existente
   const user = await sbGetUser();
+  _authReady = true;
   if (user) await initApp();
   else { showLoading(false); showLoginScreen(true); }
 });
@@ -33,16 +41,20 @@ async function initApp() {
     document.getElementById('ni-home').classList.add('active');
     buildNFList(); buildExtrato(); buildPagar(); buildReceber();
     buildTaxList(); buildCalendar(); buildPLHist();
-    setTimeout(() => { buildHomeChart(); document.getElementById('sBar').style.width = '35.4%'; }, 200);
+    const sBarWidth = (_company.porte === 'MEI') ? '34.6%' : '35.4%';
+    setTimeout(() => { buildHomeChart(); document.getElementById('sBar').style.width = sBarWidth; }, 200);
     showLoginScreen(false);
+    showOnboardingScreen(false);
     showLoading(false);
   } catch (err) {
     console.error('initApp error:', err);
-    if (err.code === 'PGRST116') {
-      showLoading(false); showLoginScreen(false); openSheet('sheet-onboarding');
+    showLoading(false);
+    if (err.code === 'PGRST116' || (err.message && err.message.includes('0 rows'))) {
+      showLoginScreen(false);
+      showOnboardingScreen(true);
     } else {
       toast('❌', 'Erro ao carregar: ' + err.message);
-      showLoading(false);
+      showLoginScreen(true);
     }
   }
 }
@@ -88,25 +100,44 @@ async function doRegister() {
   const email = document.getElementById('login-email')?.value?.trim();
   const pass  = document.getElementById('login-pass')?.value;
   if (!email || !pass) { toast('⚠️', 'Preencha e-mail e senha'); return; }
-  if (pass.length < 6) { toast('⚠️', 'A senha deve ter ao menos 6 caracteres'); return; }
+  if (pass.length < 6) { toast('⚠️', 'Senha deve ter ao menos 6 caracteres'); return; }
+
+  showLoading(true);
   try {
-    _justRegistered = true;
-    showLoading(true);
-    const user = await sbRegister(email, pass);
+    const { data, error } = await sb.auth.signUp({ email, password: pass });
     showLoading(false);
-    if (user && user.identities && user.identities.length === 0) {
-      // e-mail já cadastrado
-      toast('⚠️', 'E-mail já cadastrado. Faça login.');
-      _justRegistered = false;
+
+    if (error) {
+      toast('❌', error.message);
       return;
     }
-    // Mostra feedback de sucesso na tela de login
+
+    const user = data?.user;
+    if (!user) {
+      toast('❌', 'Erro inesperado. Tente novamente.');
+      return;
+    }
+
+    // E-mail já cadastrado (Supabase retorna user com identities vazia)
+    if (user.identities && user.identities.length === 0) {
+      toast('⚠️', 'E-mail já cadastrado. Faça login.');
+      return;
+    }
+
+    // Usuário já confirmado (confirmação de e-mail desativada no projeto)
+    const isConfirmed = !!(user.confirmed_at || user.email_confirmed_at);
+    if (isConfirmed) {
+      showLoginScreen(false);
+      showOnboardingScreen(true);
+      return;
+    }
+
+    // Confirmação de e-mail necessária
     showRegisterSuccess();
-    toast('🎉', 'Conta criada! Verifique seu e-mail.');
+
   } catch (err) {
-    _justRegistered = false;
     showLoading(false);
-    toast('❌', err.message);
+    toast('❌', err.message || 'Erro ao criar conta');
   }
 }
 
@@ -114,12 +145,12 @@ function showRegisterSuccess() {
   const loginBox = document.querySelector('#login-screen > div');
   if (!loginBox) return;
   loginBox.innerHTML = `
-    <div style="text-align:center;padding:16px 0">
+    <div style="text-align:center;padding:16px 0 8px">
       <div style="font-size:40px;margin-bottom:12px">📧</div>
-      <div style="font-family:var(--f-mono);font-size:13px;font-weight:700;color:var(--text1);letter-spacing:1px;margin-bottom:8px">CONTA CRIADA!</div>
-      <div style="font-family:var(--f-mono);font-size:10px;color:var(--muted);letter-spacing:.5px;line-height:1.6">Enviamos um e-mail de confirmação.<br>Clique no link e depois faça login.</div>
+      <div style="font-family:var(--f-mono);font-size:13px;font-weight:700;color:var(--bright);letter-spacing:1px;margin-bottom:10px">CONFIRME SEU E-MAIL</div>
+      <div style="font-family:var(--f-mono);font-size:10px;color:var(--muted);letter-spacing:.5px;line-height:1.8">Enviamos um link de confirmação.<br>Clique no link e depois faça login aqui.</div>
     </div>
-    <button onclick="location.reload()" style="width:100%;padding:13px;background:var(--accent);border:none;border-radius:10px;color:#fff;font-family:var(--f-mono);font-size:12px;font-weight:700;letter-spacing:1px;cursor:pointer;margin-top:16px">VOLTAR AO LOGIN</button>
+    <button onclick="location.reload()" style="width:100%;padding:13px;background:var(--accent);border:none;border-radius:10px;color:#fff;font-family:var(--f-mono);font-size:12px;font-weight:700;letter-spacing:1px;cursor:pointer;margin-top:8px">IR PARA O LOGIN</button>
   `;
 }
 
@@ -129,19 +160,62 @@ async function doLogout() {
 }
 
 /* ── ONBOARDING ── */
+function showOnboardingScreen(visible) {
+  const el = document.getElementById('onboarding-screen');
+  if (el) el.style.display = visible ? 'flex' : 'none';
+}
+window.showOnboardingScreen = showOnboardingScreen;
+
+window.obSelectTipo = function(tipo) {
+  document.getElementById('ob-porte').value = tipo;
+  ['MEI','ME','EPP'].forEach(t => {
+    const card = document.getElementById('ob-card-' + t.toLowerCase());
+    if (card) card.style.border = t === tipo ? '2px solid var(--accent)' : '2px solid var(--border)';
+  });
+};
+
+window.obNextStep = function(step) {
+  if (step === 3) {
+    const name = document.getElementById('ob-name')?.value?.trim();
+    const cnpj = document.getElementById('ob-cnpj')?.value?.trim();
+    if (!name) { toast('⚠️', 'Digite o nome da empresa'); return; }
+    if (!cnpj || cnpj.length < 14) { toast('⚠️', 'Digite um CNPJ válido'); return; }
+    const porte = document.getElementById('ob-porte').value;
+    document.getElementById('ob-confirm-porte').textContent = porte;
+    document.getElementById('ob-confirm-nome').textContent = name;
+    document.getElementById('ob-confirm-cnpj').textContent = cnpj;
+    document.getElementById('ob-confirm-regime').textContent = porte === 'MEI' ? 'MEI Simples' : 'Simples Nacional';
+  }
+  [1,2,3].forEach(i => {
+    document.getElementById('ob-step-' + i).style.display = i === step ? 'block' : 'none';
+    const bar = document.getElementById('ob-step-bar-' + i);
+    if (bar) bar.style.background = i <= step ? 'var(--accent)' : 'var(--border2)';
+  });
+};
+
 async function cadastrarEmpresa() {
-  const name  = document.getElementById('ob-name')?.value;
-  const cnpj  = document.getElementById('ob-cnpj')?.value;
-  const porte = document.getElementById('ob-porte')?.value || 'ME';
+  const name   = document.getElementById('ob-name')?.value?.trim();
+  const cnpj   = document.getElementById('ob-cnpj')?.value?.trim();
+  const porte  = document.getElementById('ob-porte')?.value || 'ME';
   if (!name || !cnpj) { toast('⚠️', 'Preencha nome e CNPJ'); return; }
   try {
+    showLoading(true);
     _company = await createCompany({ name, cnpj, porte });
-    closeSheet('sheet-onboarding');
+    showOnboardingScreen(false);
     applyCompanyData(_company);
-    toast('🎉', 'Empresa cadastrada!');
+    applyDefaultType(porte);
     await loadAllData();
-    buildNFList(); buildExtrato(); buildTaxList(); buildPLHist();
-  } catch (err) { toast('❌', 'Erro: ' + err.message); }
+    document.getElementById('ni-home').classList.add('active');
+    buildNFList(); buildExtrato(); buildPagar(); buildReceber();
+    buildTaxList(); buildCalendar(); buildPLHist();
+    const sBarWidth = (porte === 'MEI') ? '34.6%' : '35.4%';
+    setTimeout(() => { buildHomeChart(); document.getElementById('sBar').style.width = sBarWidth; }, 200);
+    showLoading(false);
+    toast('🎉', 'Empresa cadastrada! Bem-vindo!');
+  } catch (err) {
+    showLoading(false);
+    toast('❌', 'Erro: ' + err.message);
+  }
 }
 
 /* ── NF ── */

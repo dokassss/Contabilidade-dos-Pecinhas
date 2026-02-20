@@ -68,11 +68,25 @@ function selectCompanyType(type, btn) {
   toast('✅', 'Visualizando como ' + type);
 }
 
-function applyDefaultType() {
-  // Start as EPP — activate correct pill
-  const eppPill = document.querySelector('.type-pill[data-type="EPP"]');
-  if (eppPill) eppPill.classList.add('active');
-  document.querySelectorAll('.type-pill[data-type="MEI"], .type-pill[data-type="ME"]').forEach(p => p.classList.remove('active'));
-  document.getElementById('pl-mei-content').style.display = 'none';
-  document.getElementById('pl-full-content').style.display = 'block';
+function applyDefaultType(type) {
+  type = type || 'EPP';
+  // Activate correct pill
+  document.querySelectorAll('.type-pill').forEach(p => {
+    p.classList.toggle('active', p.dataset.type === type);
+  });
+  if (type === 'MEI') {
+    document.getElementById('pl-mei-content').style.display = 'block';
+    document.getElementById('pl-full-content').style.display = 'none';
+    const fa = document.getElementById('frAlert'); if (fa) fa.style.display = 'none';
+    document.getElementById('sBar').style.width = '34.6%';
+  } else {
+    document.getElementById('pl-mei-content').style.display = 'none';
+    document.getElementById('pl-full-content').style.display = 'block';
+    const fa = document.getElementById('frAlert'); if (fa) fa.style.display = 'flex';
+    document.getElementById('sBar').style.width = '35.4%';
+  }
+  const d = COMPANY_DATA[type] || COMPANY_DATA['EPP'];
+  document.getElementById('niPlLabel').textContent = d.navLabel;
+  document.getElementById('plPageTitle').textContent = d.pageTitle;
+  companyType = type;
 }
