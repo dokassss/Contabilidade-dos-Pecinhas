@@ -22,13 +22,13 @@
 <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
 
 <div id="login-screen" style="display:none;position:fixed;inset:0;z-index:9998;background:var(--bg);align-items:center;justify-content:center;">
-  <div style="width:100%;max-width:340px;padding:32px 24px;background:var(--card);border:1px solid var(--border);border-radius:20px;display:flex;flex-direction:column;gap:16px;">
+  <div id="login-box" style="width:100%;max-width:340px;padding:32px 24px;background:var(--card);border:1px solid var(--border);border-radius:20px;display:flex;flex-direction:column;gap:16px;">
     <div style="text-align:center;margin-bottom:8px">
       <div style="font-size:32px">📊</div>
       <div style="font-family:var(--f-mono);font-size:13px;font-weight:700;color:var(--bright);letter-spacing:1px;margin-top:6px">CONTÁBIL</div>
       <div style="font-family:var(--f-mono);font-size:10px;color:var(--muted);letter-spacing:2px">GESTÃO FINANCEIRA PJ</div>
     </div>
-    <input id="login-email" type="email" placeholder="seu@email.com" style="width:100%;padding:12px 14px;background:var(--lift);border:1px solid var(--border2);border-radius:10px;color:var(--bright);font-family:var(--f-mono);font-size:12px;box-sizing:border-box;outline:none;"/>
+    <input id="login-email" type="text" autocomplete="email" inputmode="email" placeholder="seu@email.com" style="width:100%;padding:12px 14px;background:var(--lift);border:1px solid var(--border2);border-radius:10px;color:var(--bright);font-family:var(--f-mono);font-size:12px;box-sizing:border-box;outline:none;"/>
     <input id="login-pass" type="password" placeholder="••••••••" style="width:100%;padding:12px 14px;background:var(--lift);border:1px solid var(--border2);border-radius:10px;color:var(--bright);font-family:var(--f-mono);font-size:12px;box-sizing:border-box;outline:none;" onkeydown="if(event.key==='Enter') doLogin()"/>
     <button onclick="doLogin()" style="width:100%;padding:13px;background:var(--accent);border:none;border-radius:10px;color:#fff;font-family:var(--f-mono);font-size:12px;font-weight:700;letter-spacing:1px;cursor:pointer;">ENTRAR</button>
     <div style="display:flex;align-items:center;gap:10px"><div style="flex:1;height:1px;background:var(--border)"></div><span style="font-family:var(--f-mono);font-size:10px;color:var(--muted)">OU</span><div style="flex:1;height:1px;background:var(--border)"></div></div>
@@ -79,7 +79,10 @@
         </label>
       </div>
       <input type="hidden" id="ob-porte" value="ME">
-      <button class="btn-primary" onclick="obNextStep(2)">Continuar →</button>
+      <div style="display:flex;gap:10px;">
+        <button class="btn-ghost" style="flex:1" onclick="obCancelar()">← Login</button>
+        <button class="btn-primary" style="flex:2" onclick="obNextStep(2)">Continuar →</button>
+      </div>
     </div>
 
     <!-- Step 2: Dados da empresa -->
@@ -91,6 +94,14 @@
         <div style="font-family:var(--f-mono);font-size:10px;color:var(--muted);">Nome e CNPJ aparecem nos relatórios e notas fiscais.</div>
       </div>
       <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:28px;">
+        <div class="field" style="margin:0">
+          <div class="flabel">E-MAIL</div>
+          <input id="ob-email" class="finput" type="text" autocomplete="email" inputmode="email" placeholder="seu@email.com">
+        </div>
+        <div class="field" style="margin:0">
+          <div class="flabel">SENHA</div>
+          <input id="ob-pass" class="finput" type="password" autocomplete="new-password" placeholder="Mínimo 6 caracteres">
+        </div>
         <div class="field" style="margin:0">
           <div class="flabel">NOME DA EMPRESA</div>
           <input id="ob-name" class="finput" type="text" placeholder="Ex: Fantinny Entretenimentos">
@@ -137,6 +148,11 @@
         <div style="display:flex;justify-content:space-between;align-items:center;">
           <span style="font-family:var(--f-mono);font-size:9px;color:var(--muted);letter-spacing:1px">REGIME</span>
           <span style="font-family:var(--f-mono);font-size:11px;color:var(--soft)" id="ob-confirm-regime">Simples Nacional</span>
+        </div>
+        <div style="height:1px;background:var(--border)"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-family:var(--f-mono);font-size:9px;color:var(--muted);letter-spacing:1px">E-MAIL</span>
+          <span style="font-family:var(--f-mono);font-size:11px;color:var(--soft);max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="ob-confirm-email">—</span>
         </div>
       </div>
       <div style="display:flex;gap:10px;">
