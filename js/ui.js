@@ -59,6 +59,26 @@ function maskCNPJ(input) {
   input.value = v.slice(0,18);
 }
 
+function maskCPF(input) {
+  let v = input.value.replace(/\D/g,"");
+  v = v.replace(/^(\d{3})(\d)/,"$1.$2");
+  v = v.replace(/^(\d{3})\.(\d{3})(\d)/,"$1.$2.$3");
+  v = v.replace(/\.(\d{3})(\d)/,".$1-$2");
+  input.value = v.slice(0,14);
+}
+
+function maskFone(input) {
+  let v = input.value.replace(/\D/g,"");
+  if (v.length <= 10) {
+    v = v.replace(/^(\d{2})(\d)/,"($1) $2");
+    v = v.replace(/(\d{4})(\d)/,"$1-$2");
+  } else {
+    v = v.replace(/^(\d{2})(\d)/,"($1) $2");
+    v = v.replace(/(\d{5})(\d)/,"$1-$2");
+  }
+  input.value = v.slice(0,15);
+}
+
 // Expose to global scope for inline HTML handlers
 window.switchPage = switchPage;
 window.toast = toast;
@@ -67,3 +87,5 @@ window.closeSheet = closeSheet;
 window.closeSheetOutside = closeSheetOutside;
 window.toggleHide = toggleHide;
 window.maskCNPJ = maskCNPJ;
+window.maskCPF  = maskCPF;
+window.maskFone = maskFone;

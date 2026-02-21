@@ -38,6 +38,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function initApp() {
   showLoading(true);
   try {
+    // Se há dados pendentes de cadastro (usuário confirmou e-mail e fez o primeiro login),
+    // cria a empresa agora antes de tentar carregar.
+    const pendingRaw = localStorage.getItem('_pendingCompany');
+    if (pendingRaw) {
+      try {
+        const pending = JSON.parse(pendingRaw);
+        await createCompany(pending);
+        localStorage.removeItem('_pendingCompany');
+      } catch (pendingErr) {
+        // Se a empresa já foi criada em tentativa anterior, ignora o erro e limpa o storage
+        localStorage.removeItem('_pendingCompany');
+      }
+    }
+
     _company = await fetchCompany();
     applyCompanyData(_company);
     applyDefaultType(_company.porte || 'EPP');
@@ -148,21 +162,30 @@ window.obSelectTipo = function(tipo) {
 window.obNextStep = function(step) {
   // Validações ao avançar para o step 3
   if (step === 3) {
-    const email = document.getElementById('ob-email').value.trim();
-    const pass  = document.getElementById('ob-pass').value;
-    const name  = document.getElementById('ob-name').value.trim();
-    const cnpj  = document.getElementById('ob-cnpj').value.trim();
+    const email    = document.getElementById('ob-email').value.trim();
+    const pass     = document.getElementById('ob-pass').value;
+    const name     = document.getElementById('ob-name').value.trim();
+    const cnpj     = document.getElementById('ob-cnpj').value.trim();
+    const userName = document.getElementById('ob-user-name').value.trim();
+    const userCpf  = document.getElementById('ob-user-cpf').value.trim();
+    const userFone = document.getElementById('ob-user-fone').value.trim();
+    if (!userName)                           { toast('⚠️', 'Digite seu nome completo'); return; }
+    if (!userCpf || userCpf.replace(/\D/g,'').length < 11) { toast('⚠️', 'Digite um CPF válido'); return; }
+    if (!userFone || userFone.replace(/\D/g,'').length < 10) { toast('⚠️', 'Digite um telefone válido'); return; }
     if (!email || !email.includes('@')) { toast('⚠️', 'Digite um e-mail válido'); return; }
     if (!pass || pass.length < 6)       { toast('⚠️', 'Senha precisa ter pelo menos 6 caracteres'); return; }
     if (!name)                           { toast('⚠️', 'Digite o nome da empresa'); return; }
     if (!cnpj || cnpj.replace(/\D/g,'').length < 14) { toast('⚠️', 'Digite um CNPJ válido'); return; }
     // Popula resumo
     const porte = document.getElementById('ob-porte').value;
-    document.getElementById('ob-confirm-porte').textContent  = porte;
-    document.getElementById('ob-confirm-nome').textContent   = name;
-    document.getElementById('ob-confirm-cnpj').textContent   = cnpj;
-    document.getElementById('ob-confirm-regime').textContent = (porte === 'MEI') ? 'DAS-MEI (fixo)' : 'Simples Nacional';
-    document.getElementById('ob-confirm-email').textContent  = email;
+    document.getElementById('ob-confirm-porte').textContent    = porte;
+    document.getElementById('ob-confirm-nome').textContent     = name;
+    document.getElementById('ob-confirm-cnpj').textContent     = cnpj;
+    document.getElementById('ob-confirm-regime').textContent   = (porte === 'MEI') ? 'DAS-MEI (fixo)' : 'Simples Nacional';
+    document.getElementById('ob-confirm-email').textContent    = email;
+    document.getElementById('ob-confirm-username').textContent = userName;
+    document.getElementById('ob-confirm-cpf').textContent      = userCpf;
+    document.getElementById('ob-confirm-fone').textContent     = userFone;
   }
   // Troca o step visível e atualiza barra de progresso
   [1,2,3].forEach(i => {
@@ -178,11 +201,14 @@ window.obCancelar = function() {
 };
 
 async function cadastrarEmpresa() {
-  const email = document.getElementById('ob-email').value.trim();
-  const pass  = document.getElementById('ob-pass').value;
-  const name  = document.getElementById('ob-name').value.trim();
-  const cnpj  = document.getElementById('ob-cnpj').value.trim();
-  const porte = document.getElementById('ob-porte').value || 'ME';
+  const email    = document.getElementById('ob-email').value.trim();
+  const pass     = document.getElementById('ob-pass').value;
+  const name     = document.getElementById('ob-name').value.trim();
+  const cnpj     = document.getElementById('ob-cnpj').value.trim();
+  const porte    = document.getElementById('ob-porte').value || 'ME';
+  const userName = document.getElementById('ob-user-name').value.trim();
+  const userCpf  = document.getElementById('ob-user-cpf').value.trim();
+  const userFone = document.getElementById('ob-user-fone').value.trim();
 
   showLoading(true);
   try {
@@ -211,7 +237,7 @@ async function cadastrarEmpresa() {
       await createCompany({ name, cnpj, porte });
     } else {
       // Email confirm ON — salva dados para criar após confirmar
-      try { localStorage.setItem('_pendingCompany', JSON.stringify({ name, cnpj, porte })); } catch(e) {}
+      try { localStorage.setItem('_pendingCompany', JSON.stringify({ name, cnpj, porte, userName, userCpf, userFone })); } catch(e) {}
     }
 
     showLoading(false);

@@ -90,10 +90,24 @@
       <div style="margin-bottom:28px;">
         <div style="font-size:36px;margin-bottom:14px">🏢</div>
         <div style="font-family:var(--f-mono);font-size:11px;color:var(--accent);letter-spacing:2px;margin-bottom:6px">PASSO 2 DE 3</div>
-        <div style="font-size:22px;font-weight:800;color:var(--bright);line-height:1.2;margin-bottom:8px">Dados da empresa</div>
-        <div style="font-family:var(--f-mono);font-size:10px;color:var(--muted);">Nome e CNPJ aparecem nos relatórios e notas fiscais.</div>
+        <div style="font-size:22px;font-weight:800;color:var(--bright);line-height:1.2;margin-bottom:8px">Seus dados e da empresa</div>
+        <div style="font-family:var(--f-mono);font-size:10px;color:var(--muted);">Informações do responsável e da empresa.</div>
       </div>
       <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:28px;">
+        <div style="font-family:var(--f-mono);font-size:9px;color:var(--accent);letter-spacing:2px;padding-bottom:2px;border-bottom:1px solid var(--border)">RESPONSÁVEL</div>
+        <div class="field" style="margin:0">
+          <div class="flabel">NOME COMPLETO</div>
+          <input id="ob-user-name" class="finput" type="text" autocomplete="name" placeholder="Seu nome completo">
+        </div>
+        <div class="field" style="margin:0">
+          <div class="flabel">CPF</div>
+          <input id="ob-user-cpf" class="finput" type="text" inputmode="numeric" placeholder="000.000.000-00" oninput="maskCPF(this)" maxlength="14">
+        </div>
+        <div class="field" style="margin:0">
+          <div class="flabel">TELEFONE / WHATSAPP</div>
+          <input id="ob-user-fone" class="finput" type="text" inputmode="tel" placeholder="(11) 99999-9999" oninput="maskFone(this)" maxlength="15">
+        </div>
+        <div style="font-family:var(--f-mono);font-size:9px;color:var(--accent);letter-spacing:2px;padding-bottom:2px;border-bottom:1px solid var(--border);margin-top:6px">ACESSO E EMPRESA</div>
         <div class="field" style="margin:0">
           <div class="flabel">E-MAIL</div>
           <input id="ob-email" class="finput" type="text" autocomplete="email" inputmode="email" placeholder="seu@email.com">
@@ -130,6 +144,21 @@
         <div style="font-family:var(--f-mono);font-size:10px;color:var(--muted);">Confirme os dados antes de criar sua conta.</div>
       </div>
       <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:12px;margin-bottom:28px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-family:var(--f-mono);font-size:9px;color:var(--muted);letter-spacing:1px">RESPONSÁVEL</span>
+          <span id="ob-confirm-username" style="font-size:12px;font-weight:600;color:var(--text);max-width:200px;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</span>
+        </div>
+        <div style="height:1px;background:var(--border)"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-family:var(--f-mono);font-size:9px;color:var(--muted);letter-spacing:1px">CPF</span>
+          <span id="ob-confirm-cpf" style="font-family:var(--f-mono);font-size:11px;color:var(--soft)">—</span>
+        </div>
+        <div style="height:1px;background:var(--border)"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-family:var(--f-mono);font-size:9px;color:var(--muted);letter-spacing:1px">TELEFONE</span>
+          <span id="ob-confirm-fone" style="font-family:var(--f-mono);font-size:11px;color:var(--soft)">—</span>
+        </div>
+        <div style="height:1px;background:var(--border)"></div>
         <div style="display:flex;justify-content:space-between;align-items:center;">
           <span style="font-family:var(--f-mono);font-size:9px;color:var(--muted);letter-spacing:1px">PORTE</span>
           <span id="ob-confirm-porte" style="font-family:var(--f-mono);font-size:11px;font-weight:700;color:var(--accent)">ME</span>
