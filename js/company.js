@@ -90,3 +90,6 @@ function applyDefaultType(type) {
   document.getElementById('plPageTitle').textContent = d.pageTitle;
   companyType = type;
 }
+
+// Expose to global scope for inline HTML handlers
+window.selectCompanyType = selectCompanyType;

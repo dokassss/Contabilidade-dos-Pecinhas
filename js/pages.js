@@ -265,3 +265,11 @@ function buildPLHist() {
     el.appendChild(div);
   });
 }
+
+// Expose to global scope for inline HTML handlers
+window.setNFTab = setNFTab;
+window.filterNFs = filterNFs;
+window.emitirNF = emitirNF;
+window.setFtab = setFtab;
+window.shiftMonth = shiftMonth;
+window.updateSim = updateSim;

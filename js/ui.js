@@ -58,3 +58,12 @@ function maskCNPJ(input) {
   v = v.replace(/(\d{4})(\d)/,"$1-$2");
   input.value = v.slice(0,18);
 }
+
+// Expose to global scope for inline HTML handlers
+window.switchPage = switchPage;
+window.toast = toast;
+window.openSheet = openSheet;
+window.closeSheet = closeSheet;
+window.closeSheetOutside = closeSheetOutside;
+window.toggleHide = toggleHide;
+window.maskCNPJ = maskCNPJ;

@@ -109,6 +109,7 @@ async function doLogout() {
 
 window.doLogin = doLogin;
 window.doLogout = doLogout;
+window.cadastrarEmpresa = cadastrarEmpresa;
 
 /* ════════════════════════════════════════════════
    CRIAR CONTA — só abre o onboarding
