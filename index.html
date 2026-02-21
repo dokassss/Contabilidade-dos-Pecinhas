@@ -28,13 +28,83 @@
       <div style="font-family:var(--f-mono);font-size:13px;font-weight:700;color:var(--bright);letter-spacing:1px;margin-top:6px">CONTÁBIL</div>
       <div style="font-family:var(--f-mono);font-size:10px;color:var(--muted);letter-spacing:2px">GESTÃO FINANCEIRA PJ</div>
     </div>
-    <input id="login-email" type="text" autocomplete="email" inputmode="email" placeholder="seu@email.com" style="width:100%;padding:12px 14px;background:var(--lift);border:1px solid var(--border2);border-radius:10px;color:var(--bright);font-family:var(--f-mono);font-size:12px;box-sizing:border-box;outline:none;"/>
-    <input id="login-pass" type="password" placeholder="••••••••" style="width:100%;padding:12px 14px;background:var(--lift);border:1px solid var(--border2);border-radius:10px;color:var(--bright);font-family:var(--f-mono);font-size:12px;box-sizing:border-box;outline:none;" onkeydown="if(event.key==='Enter') doLogin()"/>
+    <input id="login-email" type="text" autocomplete="email" inputmode="email" placeholder="Insira seu e-mail" style="width:100%;padding:12px 14px;background:var(--lift);border:1px solid var(--border2);border-radius:10px;color:var(--bright);font-family:var(--f-mono);font-size:12px;box-sizing:border-box;outline:none;"/>
+    <input id="login-pass" type="password" placeholder="Insira sua senha" style="width:100%;padding:12px 14px;background:var(--lift);border:1px solid var(--border2);border-radius:10px;color:var(--bright);font-family:var(--f-mono);font-size:12px;box-sizing:border-box;outline:none;" onkeydown="if(event.key==='Enter') doLogin()"/>
     <button onclick="doLogin()" style="width:100%;padding:13px;background:var(--accent);border:none;border-radius:10px;color:#fff;font-family:var(--f-mono);font-size:12px;font-weight:700;letter-spacing:1px;cursor:pointer;">ENTRAR</button>
     <div style="display:flex;align-items:center;gap:10px"><div style="flex:1;height:1px;background:var(--border)"></div><span style="font-family:var(--f-mono);font-size:10px;color:var(--muted)">OU</span><div style="flex:1;height:1px;background:var(--border)"></div></div>
     <button onclick="doRegister()" style="width:100%;padding:13px;background:transparent;border:1px solid var(--border2);border-radius:10px;color:var(--soft);font-family:var(--f-mono);font-size:12px;letter-spacing:1px;cursor:pointer;">CRIAR CONTA</button>
   </div>
-</div>  
+</div>
+
+<!-- ══ REGISTER SCREEN (Cadastro Pessoal) ═══════════════════ -->
+<div id="register-screen" style="display:none;position:fixed;inset:0;z-index:9999;background:var(--bg);align-items:center;justify-content:center;overflow-y:auto;padding:24px;">
+  <div style="width:100%;max-width:360px;padding:32px 0;display:flex;flex-direction:column;gap:0;">
+    <div style="margin-bottom:28px;">
+      <div style="font-size:36px;margin-bottom:14px">👤</div>
+      <div style="font-family:var(--f-mono);font-size:11px;color:var(--accent);letter-spacing:2px;margin-bottom:6px">CRIAR CONTA</div>
+      <div style="font-size:22px;font-weight:800;color:var(--bright);line-height:1.2;margin-bottom:8px">Seus dados pessoais</div>
+      <div style="font-family:var(--f-mono);font-size:10px;color:var(--muted);">Preencha para criar seu login. Empresas são adicionadas depois.</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:28px;">
+      <div class="field" style="margin:0">
+        <div class="flabel">NOME COMPLETO</div>
+        <input id="reg-nome" class="finput" type="text" autocomplete="name" placeholder="Seu nome completo">
+      </div>
+      <div class="field" style="margin:0">
+        <div class="flabel">DATA DE NASCIMENTO</div>
+        <input id="reg-nascimento" class="finput" type="date" max="2010-01-01">
+      </div>
+      <div class="field" style="margin:0">
+        <div class="flabel">E-MAIL</div>
+        <input id="reg-email" class="finput" type="text" autocomplete="email" inputmode="email" placeholder="seu@email.com">
+      </div>
+      <div class="field" style="margin:0">
+        <div class="flabel">CPF</div>
+        <input id="reg-cpf" class="finput" type="text" inputmode="numeric" placeholder="000.000.000-00" oninput="maskCPF(this)" maxlength="14">
+      </div>
+      <div class="field" style="margin:0">
+        <div class="flabel">TELEFONE / WHATSAPP</div>
+        <input id="reg-telefone" class="finput" type="text" inputmode="tel" placeholder="(11) 99999-9999" oninput="maskFone(this)" maxlength="15">
+      </div>
+      <div class="field" style="margin:0">
+        <div class="flabel">SENHA</div>
+        <input id="reg-senha" class="finput" type="password" autocomplete="new-password" placeholder="Mínimo 6 caracteres">
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn-ghost" style="flex:1" onclick="showRegisterScreen(false);showLoginScreen(true)">← Voltar</button>
+      <button class="btn-primary" style="flex:2" onclick="doCreateAccount()">Criar conta →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SHEET: ADICIONAR EMPRESA ══════════════════════════════ -->
+<div id="sheet-add-company" class="sheet" style="display:none;" onclick="closeSheetOutside(event,'sheet-add-company')">
+  <div class="sheet-inner" style="padding:24px;display:flex;flex-direction:column;gap:16px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+      <div style="font-family:var(--f-mono);font-size:12px;font-weight:700;color:var(--bright);letter-spacing:1px">NOVA EMPRESA</div>
+      <button onclick="closeSheet('sheet-add-company')" style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;">✕</button>
+    </div>
+    <div class="field" style="margin:0">
+      <div class="flabel">PORTE</div>
+      <select id="add-company-porte" class="finput" style="cursor:pointer;">
+        <option value="MEI">MEI — Microempreendedor (até R$ 81k/ano)</option>
+        <option value="ME" selected>ME — Microempresa (até R$ 360k/ano)</option>
+        <option value="EPP">EPP — Pequeno Porte (até R$ 4,8mi/ano)</option>
+      </select>
+    </div>
+    <div class="field" style="margin:0">
+      <div class="flabel">NOME DA EMPRESA</div>
+      <input id="add-company-name" class="finput" type="text" placeholder="Ex: Fantinny Entretenimentos">
+    </div>
+    <div class="field" style="margin:0">
+      <div class="flabel">CNPJ</div>
+      <input id="add-company-cnpj" class="finput" type="text" placeholder="00.000.000/0001-00" oninput="maskCNPJ(this)" maxlength="18">
+    </div>
+    <button class="btn-primary" style="margin-top:4px;" onclick="doAddCompany()">Adicionar empresa 🚀</button>
+  </div>
+</div>
+
 
 <!-- ══ ONBOARDING SCREEN ══════════════════════════════════ -->
 <div id="onboarding-screen" style="display:none;position:fixed;inset:0;z-index:9999;background:var(--bg);align-items:center;justify-content:center;padding:24px;">
@@ -87,14 +157,14 @@
 
     <!-- Step 2: Dados da empresa -->
     <div id="ob-step-2" style="display:none;">
-      <div style="margin-bottom:28px;">
-        <div style="font-size:36px;margin-bottom:14px">🏢</div>
+      <div style="margin-bottom:22px;">
+        <div style="font-size:36px;margin-bottom:14px">🧑‍💼</div>
         <div style="font-family:var(--f-mono);font-size:11px;color:var(--accent);letter-spacing:2px;margin-bottom:6px">PASSO 2 DE 3</div>
         <div style="font-size:22px;font-weight:800;color:var(--bright);line-height:1.2;margin-bottom:8px">Seus dados e da empresa</div>
         <div style="font-family:var(--f-mono);font-size:10px;color:var(--muted);">Informações do responsável e da empresa.</div>
       </div>
       <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:28px;">
-        <div style="font-family:var(--f-mono);font-size:9px;color:var(--accent);letter-spacing:2px;padding-bottom:2px;border-bottom:1px solid var(--border)">RESPONSÁVEL</div>
+        <div style="font-family:var(--f-mono);font-size:9px;color:var(--accent);letter-spacing:2px;padding-bottom:4px;border-bottom:1px solid var(--border)">RESPONSÁVEL</div>
         <div class="field" style="margin:0">
           <div class="flabel">NOME COMPLETO</div>
           <input id="ob-user-name" class="finput" type="text" autocomplete="name" placeholder="Seu nome completo">
@@ -107,7 +177,7 @@
           <div class="flabel">TELEFONE / WHATSAPP</div>
           <input id="ob-user-fone" class="finput" type="text" inputmode="tel" placeholder="(11) 99999-9999" oninput="maskFone(this)" maxlength="15">
         </div>
-        <div style="font-family:var(--f-mono);font-size:9px;color:var(--accent);letter-spacing:2px;padding-bottom:2px;border-bottom:1px solid var(--border);margin-top:6px">ACESSO E EMPRESA</div>
+        <div style="font-family:var(--f-mono);font-size:9px;color:var(--accent);letter-spacing:2px;padding-bottom:4px;border-bottom:1px solid var(--border);margin-top:4px">ACESSO E EMPRESA</div>
         <div class="field" style="margin:0">
           <div class="flabel">E-MAIL</div>
           <input id="ob-email" class="finput" type="text" autocomplete="email" inputmode="email" placeholder="seu@email.com">

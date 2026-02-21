@@ -1,13 +1,20 @@
 /* ════════════════════════════════════════════════
    MAIN-SUPABASE.JS
+   
+   FLUXO DE AUTENTICAÇÃO:
+   1. Cadastro pessoal (nome, nascimento, email, cpf, telefone, senha)
+   2. Confirma email → faz login
+   3. Dentro do app, cria empresas vinculadas à conta
+   4. Home mostra dados consolidados de todas as empresas
 ════════════════════════════════════════════════ */
 
-let _company      = null;
-let _nfData       = [];
-let _extratoData  = [];
-let _impostosData = [];
-let _prolaboreData= [];
-let _authReady    = false;
+let _profile       = null; // dados pessoais do usuário logado
+let _companies     = [];   // todas as empresas do usuário
+let _activeCompany = null; // empresa selecionada nas abas (null = todas)
+let _nfData        = [];
+let _extratoData   = [];
+let _impostosData  = [];
+let _prolaboreData = [];
 
 /* ════════════════════════════════════════════════
    BOOT
@@ -15,14 +22,16 @@ let _authReady    = false;
 document.addEventListener('DOMContentLoaded', async () => {
   showLoading(true);
 
-  sbOnAuthChange(async (event, user) => {
-    if (!_authReady) return;
-    if (event === 'SIGNED_IN')  await initApp();
-    if (event === 'SIGNED_OUT') showLoginScreen(true);
+  // Só monitora SIGNED_OUT — para deslogar se sessão expirar em outra aba
+  sbOnAuthChange((event) => {
+    if (event === 'SIGNED_OUT') {
+      _profile = null;
+      _companies = [];
+      showLoginScreen(true);
+    }
   });
 
   const user = await sbGetUser();
-  _authReady = true;
 
   if (user) {
     await initApp();
@@ -33,56 +42,72 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 /* ════════════════════════════════════════════════
-   INIT APP (usuário já logado)
+   INIT APP
 ════════════════════════════════════════════════ */
 async function initApp() {
   showLoading(true);
   try {
-    // Se há dados pendentes de cadastro (usuário confirmou e-mail e fez o primeiro login),
-    // cria a empresa agora antes de tentar carregar.
-    const pendingRaw = localStorage.getItem('_pendingCompany');
-    if (pendingRaw) {
-      try {
-        const pending = JSON.parse(pendingRaw);
-        await createCompany(pending);
-        localStorage.removeItem('_pendingCompany');
-      } catch (pendingErr) {
-        // Se a empresa já foi criada em tentativa anterior, ignora o erro e limpa o storage
-        localStorage.removeItem('_pendingCompany');
-      }
+    // Carrega perfil pessoal do usuário
+    _profile    = await fetchProfile();
+    _companies  = await fetchCompanies();
+
+    // Usa a primeira empresa como ativa por padrão (se houver)
+    _activeCompany = _companies.length > 0 ? _companies[0] : null;
+
+    if (_activeCompany) {
+      applyCompanyData(_activeCompany);
+      applyDefaultType(_activeCompany.porte || 'EPP');
     }
 
-    _company = await fetchCompany();
-    applyCompanyData(_company);
-    applyDefaultType(_company.porte || 'EPP');
     await loadAllData();
+
     document.getElementById('ni-home').classList.add('active');
-    buildNFList(); buildExtrato(); buildPagar(); buildReceber();
-    buildTaxList(); buildCalendar(); buildPLHist();
-    const w = (_company.porte === 'MEI') ? '34.6%' : '35.4%';
-    setTimeout(() => { buildHomeChart(); document.getElementById('sBar').style.width = w; }, 200);
+    buildNFList();
+    buildExtrato();
+    buildPagar();
+    buildReceber();
+    buildTaxList();
+    buildCalendar();
+    buildPLHist();
+
+    const w = (_activeCompany?.porte === 'MEI') ? '34.6%' : '35.4%';
+    setTimeout(() => {
+      buildHomeChart();
+      document.getElementById('sBar').style.width = w;
+    }, 200);
+
+    // Se não tem empresa ainda, mostra banner de boas-vindas (não bloqueia o app)
+    if (_companies.length === 0) {
+      showNenhumaEmpresaBanner(true);
+    }
+
     showLoginScreen(false);
     showOnboardingScreen(false);
+    showRegisterScreen(false);
     showLoading(false);
+
   } catch (err) {
     showLoading(false);
-    if (err.code === 'PGRST116' || (err.message && err.message.includes('0 rows'))) {
-      // Logado mas sem empresa — não deveria acontecer no fluxo novo
-      // mas trata por segurança
-      showLoginScreen(false);
-      showOnboardingScreen(true);
-    } else {
-      toast('❌', 'Erro ao carregar: ' + err.message);
-      showLoginScreen(true);
-    }
+    console.error('[initApp]', err);
+    toast('❌', 'Erro ao carregar: ' + (err.message || err));
+    showLoginScreen(true);
   }
 }
 
 async function loadAllData() {
+  const companyId = _activeCompany?.id || null;
   const [nfs, extrato, impostos, prolabore] = await Promise.all([
-    fetchNFs(), fetchExtrato(), fetchImpostos(), fetchProlabore()
+    fetchNFs({ companyId }).catch(e => { console.warn('fetchNFs:', e); return []; }),
+    fetchExtrato({ companyId }).catch(e => { console.warn('fetchExtrato:', e); return []; }),
+    fetchImpostos({ companyId }).catch(e => { console.warn('fetchImpostos:', e); return []; }),
+    fetchProlabore({ companyId }).catch(e => { console.warn('fetchProlabore:', e); return []; }),
   ]);
-  _nfData = nfs; _extratoData = extrato; _impostosData = impostos; _prolaboreData = prolabore;
+
+  _nfData        = nfs;
+  _extratoData   = extrato;
+  _impostosData  = impostos;
+  _prolaboreData = prolabore;
+
   NFs.length = 0;      NFs.push(..._nfData);
   EXTRATO.length = 0;  EXTRATO.push(..._extratoData);
   IMPOSTOS.length = 0; IMPOSTOS.push(..._impostosData);
@@ -92,15 +117,29 @@ async function loadAllData() {
 function applyCompanyData(c) {
   if (!c) return;
   const s = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
-  s('idCompanyName', c.name);
-  s('idCnpj', 'CNPJ · ' + c.cnpj);
-  s('idPorte', c.porte);
-  s('idRegime', c.regime === 'simples' ? 'Simples Nacional' : c.regime);
+  s('idCompanyName',     c.name);
+  s('idCnpj',           'CNPJ · ' + c.cnpj);
+  s('idPorte',          c.porte);
+  s('idRegime',         c.regime === 'simples' ? 'Simples Nacional' : c.regime);
   s('companyTypeBadge', c.porte);
 }
 
+function showNenhumaEmpresaBanner(visible) {
+  // Banner não bloqueante: aparece no topo do app quando não há empresa
+  let banner = document.getElementById('no-company-banner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'no-company-banner';
+    banner.style.cssText = 'position:fixed;top:0;left:50%;transform:translateX(-50%);z-index:999;width:100%;max-width:390px;background:var(--accent);padding:10px 16px;font-family:var(--f-mono);font-size:10px;color:#fff;text-align:center;cursor:pointer;letter-spacing:.5px;';
+    banner.textContent = '+ Adicione sua primeira empresa para começar';
+    banner.onclick = () => showAddCompanySheet(true);
+    document.body.appendChild(banner);
+  }
+  banner.style.display = visible ? 'block' : 'none';
+}
+
 /* ════════════════════════════════════════════════
-   LOGIN (tela de login → entra no app)
+   LOGIN
 ════════════════════════════════════════════════ */
 async function doLogin() {
   const email = document.getElementById('login-email').value.trim();
@@ -109,7 +148,7 @@ async function doLogin() {
   try {
     showLoading(true);
     await sbLogin(email, pass);
-    // onAuthStateChange → initApp
+    await initApp();
   } catch (err) {
     showLoading(false);
     toast('❌', 'Login inválido: ' + err.message);
@@ -118,102 +157,58 @@ async function doLogin() {
 
 async function doLogout() {
   await sbLogout();
-  location.reload();
+  _profile = null;
+  _companies = [];
+  showLoginScreen(true);
 }
 
-window.doLogin = doLogin;
+window.doLogin  = doLogin;
 window.doLogout = doLogout;
-window.cadastrarEmpresa = cadastrarEmpresa;
 
 /* ════════════════════════════════════════════════
-   CRIAR CONTA — só abre o onboarding
+   CADASTRO PESSOAL
+   Tela separada do login — coleta dados pessoais,
+   cria conta no Supabase Auth + perfil na tabela profiles.
+   Depois confirma email → faz login → adiciona empresa dentro do app.
 ════════════════════════════════════════════════ */
 function doRegister() {
-  showOnboardingScreen(true);
+  showRegisterScreen(true);
 }
-
 window.doRegister = doRegister;
 
-/* ════════════════════════════════════════════════
-   ONBOARDING
-   Fluxo: step1(porte) → step2(email+senha+empresa) → step3(resumo) → cadastrar
-   Ao fim: signUp + cria empresa + mostra tela "confirme seu email"
-   Usuário confirma email → faz login na tela de login → initApp
-════════════════════════════════════════════════ */
-
-function showOnboardingScreen(visible) {
-  const el = document.getElementById('onboarding-screen');
+function showRegisterScreen(visible) {
+  const el = document.getElementById('register-screen');
   if (!el) return;
   el.style.display = visible ? 'flex' : 'none';
-  if (visible) obNextStep(1); // sempre começa do step 1
+  if (visible) showLoginScreen(false);
 }
-window.showOnboardingScreen = showOnboardingScreen;
+window.showRegisterScreen = showRegisterScreen;
 
-window.obSelectTipo = function(tipo) {
-  document.getElementById('ob-porte').value = tipo;
-  ['MEI','ME','EPP'].forEach(t => {
-    const card = document.getElementById('ob-card-' + t.toLowerCase());
-    if (card) card.style.border = (t === tipo)
-      ? '2px solid var(--accent)'
-      : '2px solid var(--border)';
-  });
-};
+async function doCreateAccount() {
+  const nome       = document.getElementById('reg-nome').value.trim();
+  const nascimento = document.getElementById('reg-nascimento').value.trim();
+  const email      = document.getElementById('reg-email').value.trim();
+  const cpf        = document.getElementById('reg-cpf').value.trim();
+  const telefone   = document.getElementById('reg-telefone').value.trim();
+  const senha      = document.getElementById('reg-senha').value;
 
-window.obNextStep = function(step) {
-  // Validações ao avançar para o step 3
-  if (step === 3) {
-    const email    = document.getElementById('ob-email').value.trim();
-    const pass     = document.getElementById('ob-pass').value;
-    const name     = document.getElementById('ob-name').value.trim();
-    const cnpj     = document.getElementById('ob-cnpj').value.trim();
-    const userName = document.getElementById('ob-user-name').value.trim();
-    const userCpf  = document.getElementById('ob-user-cpf').value.trim();
-    const userFone = document.getElementById('ob-user-fone').value.trim();
-    if (!userName)                           { toast('⚠️', 'Digite seu nome completo'); return; }
-    if (!userCpf || userCpf.replace(/\D/g,'').length < 11) { toast('⚠️', 'Digite um CPF válido'); return; }
-    if (!userFone || userFone.replace(/\D/g,'').length < 10) { toast('⚠️', 'Digite um telefone válido'); return; }
-    if (!email || !email.includes('@')) { toast('⚠️', 'Digite um e-mail válido'); return; }
-    if (!pass || pass.length < 6)       { toast('⚠️', 'Senha precisa ter pelo menos 6 caracteres'); return; }
-    if (!name)                           { toast('⚠️', 'Digite o nome da empresa'); return; }
-    if (!cnpj || cnpj.replace(/\D/g,'').length < 14) { toast('⚠️', 'Digite um CNPJ válido'); return; }
-    // Popula resumo
-    const porte = document.getElementById('ob-porte').value;
-    document.getElementById('ob-confirm-porte').textContent    = porte;
-    document.getElementById('ob-confirm-nome').textContent     = name;
-    document.getElementById('ob-confirm-cnpj').textContent     = cnpj;
-    document.getElementById('ob-confirm-regime').textContent   = (porte === 'MEI') ? 'DAS-MEI (fixo)' : 'Simples Nacional';
-    document.getElementById('ob-confirm-email').textContent    = email;
-    document.getElementById('ob-confirm-username').textContent = userName;
-    document.getElementById('ob-confirm-cpf').textContent      = userCpf;
-    document.getElementById('ob-confirm-fone').textContent     = userFone;
-  }
-  // Troca o step visível e atualiza barra de progresso
-  [1,2,3].forEach(i => {
-    document.getElementById('ob-step-' + i).style.display = (i === step) ? 'block' : 'none';
-    const bar = document.getElementById('ob-step-bar-' + i);
-    if (bar) bar.style.background = (i <= step) ? 'var(--accent)' : 'var(--border2)';
-  });
-};
-
-window.obCancelar = function() {
-  showOnboardingScreen(false);
-  showLoginScreen(true);
-};
-
-async function cadastrarEmpresa() {
-  const email    = document.getElementById('ob-email').value.trim();
-  const pass     = document.getElementById('ob-pass').value;
-  const name     = document.getElementById('ob-name').value.trim();
-  const cnpj     = document.getElementById('ob-cnpj').value.trim();
-  const porte    = document.getElementById('ob-porte').value || 'ME';
-  const userName = document.getElementById('ob-user-name').value.trim();
-  const userCpf  = document.getElementById('ob-user-cpf').value.trim();
-  const userFone = document.getElementById('ob-user-fone').value.trim();
+  if (!nome)                                              { toast('⚠️', 'Digite seu nome completo'); return; }
+  if (!nascimento)                                        { toast('⚠️', 'Digite sua data de nascimento'); return; }
+  if (!email || !email.includes('@'))                     { toast('⚠️', 'Digite um e-mail válido'); return; }
+  if (!cpf || cpf.replace(/\D/g,'').length < 11)         { toast('⚠️', 'Digite um CPF válido'); return; }
+  if (!telefone || telefone.replace(/\D/g,'').length < 10){ toast('⚠️', 'Digite um telefone válido'); return; }
+  if (!senha || senha.length < 6)                        { toast('⚠️', 'Senha precisa ter pelo menos 6 caracteres'); return; }
 
   showLoading(true);
   try {
-    // 1. Cria conta no Supabase Auth
-    const { data, error } = await sb.auth.signUp({ email, password: pass });
+    // 1. Cria conta no Supabase Auth com dados pessoais no metadata
+    const { data, error } = await sb.auth.signUp({
+      email,
+      password: senha,
+      options: {
+        data: { nome, nascimento, cpf, telefone } // salvo no user_metadata
+      }
+    });
     if (error) throw error;
 
     const user = data?.user;
@@ -222,36 +217,34 @@ async function cadastrarEmpresa() {
     if (!user || (user.identities && user.identities.length === 0)) {
       showLoading(false);
       toast('⚠️', 'E-mail já cadastrado. Faça login.');
-      showOnboardingScreen(false);
+      showRegisterScreen(false);
       showLoginScreen(true);
       return;
     }
 
-    // 2. Cria a empresa (funciona com ou sem confirmação de email ativada)
-    //    Se email confirm estiver ON, o usuário ainda não está logado —
-    //    salvamos os dados para criar a empresa após o primeiro login.
     const isConfirmed = !!(user.confirmed_at || user.email_confirmed_at);
 
     if (isConfirmed) {
-      // Email confirm OFF — já está logado, cria empresa agora
-      await createCompany({ name, cnpj, porte });
+      // Email confirm OFF no Supabase — já logado, cria perfil e entra
+      await createProfile({ userId: user.id, nome, nascimento, cpf, telefone, email });
+      showLoading(false);
+      showRegisterScreen(false);
+      await initApp();
     } else {
-      // Email confirm ON — salva dados para criar após confirmar
-      try { localStorage.setItem('_pendingCompany', JSON.stringify({ name, cnpj, porte, userName, userCpf, userFone })); } catch(e) {}
+      // Email confirm ON — mostra tela de confirmação
+      showLoading(false);
+      showRegisterScreen(false);
+      mostrarConfirmacaoEmail(email);
     }
-
-    showLoading(false);
-    showOnboardingScreen(false);
-    mostrarConfirmacaoEmail(email);
 
   } catch (err) {
     showLoading(false);
     toast('❌', err.message || 'Erro ao criar conta');
   }
 }
+window.doCreateAccount = doCreateAccount;
 
 function mostrarConfirmacaoEmail(email) {
-  // Mostra tela de login com mensagem de "confirme seu email"
   showLoginScreen(true);
   const box = document.getElementById('login-box');
   if (!box) return;
@@ -272,6 +265,56 @@ function mostrarConfirmacaoEmail(email) {
     </button>
   `;
 }
+
+/* ════════════════════════════════════════════════
+   ADICIONAR EMPRESA (dentro do app, pós-login)
+════════════════════════════════════════════════ */
+function showAddCompanySheet(visible) {
+  // Usa um sheet/modal dentro do app para adicionar empresa
+  if (visible) {
+    openSheet('sheet-add-company');
+  } else {
+    closeSheet('sheet-add-company');
+  }
+}
+window.showAddCompanySheet = showAddCompanySheet;
+
+async function doAddCompany() {
+  const name  = document.getElementById('add-company-name').value.trim();
+  const cnpj  = document.getElementById('add-company-cnpj').value.trim();
+  const porte = document.getElementById('add-company-porte').value || 'ME';
+
+  if (!name)                                                    { toast('⚠️', 'Digite o nome da empresa'); return; }
+  if (!cnpj || cnpj.replace(/\D/g,'').length < 14)             { toast('⚠️', 'Digite um CNPJ válido'); return; }
+
+  showLoading(true);
+  try {
+    const newCompany = await createCompany({ name, cnpj, porte });
+    _companies.push(newCompany);
+    _activeCompany = newCompany;
+    applyCompanyData(_activeCompany);
+    applyDefaultType(_activeCompany.porte || 'EPP');
+    closeSheet('sheet-add-company');
+    showNenhumaEmpresaBanner(false);
+    toast('✅', 'Empresa adicionada!');
+    showLoading(false);
+  } catch (err) {
+    showLoading(false);
+    toast('❌', err.message || 'Erro ao adicionar empresa');
+  }
+}
+window.doAddCompany = doAddCompany;
+
+/* ════════════════════════════════════════════════
+   ONBOARDING LEGADO (mantido por compatibilidade
+   mas não é mais o fluxo principal)
+════════════════════════════════════════════════ */
+function showOnboardingScreen(visible) {
+  const el = document.getElementById('onboarding-screen');
+  if (!el) return;
+  el.style.display = visible ? 'flex' : 'none';
+}
+window.showOnboardingScreen = showOnboardingScreen;
 
 /* ════════════════════════════════════════════════
    NF / IMPOSTOS / PRÓ-LABORE
@@ -314,14 +357,14 @@ window.selectCompanyType = async function(type, btn) {
   document.querySelectorAll('.type-pill').forEach(p => p.classList.remove('active'));
   btn.classList.add('active');
   const d = COMPANY_DATA[type];
-  document.getElementById('idCompanyName').textContent  = _company?.name || d.name;
-  document.getElementById('idCnpj').textContent         = 'CNPJ · ' + (_company?.cnpj || '00.000.000/0001-00');
-  document.getElementById('idPorte').textContent        = d.porte;
-  document.getElementById('idRegime').textContent       = d.regime;
-  document.getElementById('idTypeBadge').textContent    = d.badge;
+  document.getElementById('idCompanyName').textContent    = _activeCompany?.name || d.name;
+  document.getElementById('idCnpj').textContent           = 'CNPJ · ' + (_activeCompany?.cnpj || '00.000.000/0001-00');
+  document.getElementById('idPorte').textContent          = d.porte;
+  document.getElementById('idRegime').textContent         = d.regime;
+  document.getElementById('idTypeBadge').textContent      = d.badge;
   document.getElementById('companyTypeBadge').textContent = type;
-  document.getElementById('niPlLabel').textContent      = d.navLabel;
-  document.getElementById('plPageTitle').textContent    = d.pageTitle;
+  document.getElementById('niPlLabel').textContent        = d.navLabel;
+  document.getElementById('plPageTitle').textContent      = d.pageTitle;
   if (type === 'MEI') {
     document.getElementById('pl-mei-content').style.display = 'block';
     document.getElementById('pl-full-content').style.display = 'none';
@@ -334,7 +377,7 @@ window.selectCompanyType = async function(type, btn) {
     document.getElementById('sBar').style.width = '35.4%';
   }
   toast('✅', 'Visualizando como ' + type);
-  if (_company?.id) { try { await saveCompany({ id: _company.id, porte: type }); } catch(e) {} }
+  if (_activeCompany?.id) { try { await saveCompany({ id: _activeCompany.id, porte: type }); } catch(e) {} }
 };
 
 /* ════════════════════════════════════════════════
@@ -350,5 +393,5 @@ function showLoginScreen(visible) {
   const appEl   = document.getElementById('phone');
   if (!loginEl || !appEl) return;
   loginEl.style.display = visible ? 'flex' : 'none';
-  appEl.style.display   = visible ? 'none' : '';
+  appEl.style.display   = visible ? 'none'  : '';
 }
