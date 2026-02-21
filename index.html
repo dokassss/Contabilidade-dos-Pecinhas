@@ -199,6 +199,27 @@
           <input id="ob-cidade" class="finput" type="text" placeholder="Ex: São Paulo — SP">
         </div>
       </div>
+      <div class="field">
+        <div class="flabel">CÓDIGO IBGE DA CIDADE</div>
+        <input id="ob-codigo-ibge" class="finput" type="text" placeholder="Ex: 3550308">
+        <div style="font-size:10px;color:var(--muted);margin-top:4px">Consulte em: ibge.gov.br/cidades</div>
+      </div>
+      <div class="field">
+        <div class="flabel">INSCRIÇÃO MUNICIPAL</div>
+        <input id="ob-inscricao-municipal" class="finput" type="text" placeholder="Somente números">
+      </div>
+      <div class="field">
+        <div class="flabel">CNAE</div>
+        <input id="ob-cnae" class="finput" type="text" placeholder="Ex: 6201500">
+      </div>
+      <div class="field">
+        <div class="flabel">ITEM DA LISTA DE SERVIÇO (LC116)</div>
+        <input id="ob-item-lista-servico" class="finput" type="text" placeholder="Ex: 01.07">
+      </div>
+      <div class="field">
+        <div class="flabel">ALÍQUOTA ISS (%)</div>
+        <input id="ob-aliquota-iss" class="finput" type="number" placeholder="Ex: 2">
+      </div>
       <div style="display:flex;gap:10px;">
         <button class="btn-ghost" style="flex:1" onclick="obNextStep(1)">← Voltar</button>
         <button class="btn-primary" style="flex:2" onclick="obNextStep(3)">Continuar →</button>
@@ -955,6 +976,14 @@
     <div class="field">
       <div class="flabel">CLIENTE</div>
       <input id="nf-cliente" class="finput" type="text" placeholder="Nome do cliente">
+    </div>
+    <div class="field">
+      <div class="flabel">CPF / CNPJ DO TOMADOR</div>
+      <input id="nf-cpf-cnpj" class="finput" type="text" placeholder="000.000.000-00 ou 00.000.000/0001-00">
+    </div>
+    <div class="field">
+      <div class="flabel">E-MAIL DO TOMADOR</div>
+      <input id="nf-email-tomador" class="finput" type="email" placeholder="cliente@email.com">
     </div>
     <div class="field">
       <div class="flabel">NÚMERO DA NOTA</div>

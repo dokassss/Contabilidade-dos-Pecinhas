@@ -65,10 +65,14 @@ async function saveCompany(fields) {
   return data;
 }
 
-async function createCompany({ name, cnpj, porte }) {
+async function createCompany({ name, cnpj, porte, cidade, codigo_ibge, inscricao_municipal, cnae, item_lista_servico, aliquota_iss }) {
   const { data: { user } } = await sb.auth.getUser();
   const { data, error } = await sb.from('companies')
-    .insert({ name, cnpj, porte, user_id: user.id, regime: 'simples' })
+    .insert({
+      name, cnpj, porte, user_id: user.id, regime: 'simples',
+      cidade, codigo_ibge, inscricao_municipal, cnae, item_lista_servico,
+      aliquota_iss: aliquota_iss ? parseFloat(aliquota_iss) : null
+    })
     .select()
     .single();
   if (error) throw error;
@@ -99,15 +103,20 @@ async function fetchNFs({ status, search, companyId } = {}) {
     rec:    nf.recorrente,
     type:   nf.tipo,
     _id:    nf.id,
+    // novos campos:
+    enotas_status: nf.enotas_status || null,
+    pdf_url:       nf.pdf_url || null,
   }));
 }
 
-async function createNF({ numero, cliente, tipo, valor, moeda = 'BRL', recorrente = false, data_emissao }) {
-  const companies = await fetchCompanies();
-  const company = companies[0]; // usa primeira empresa por padrão
-  if (!company) throw new Error('Nenhuma empresa encontrada');
+async function createNF({ numero, cliente, cpf_cnpj_tomador, email_tomador, descricao_servico, tipo, valor, moeda = 'BRL', recorrente = false, data_emissao }) {
+  const company = await fetchCompany();
   const { data, error } = await sb.from('notas_fiscais')
-    .insert({ numero, cliente, tipo, valor, moeda, recorrente, data_emissao, status: 'pending', company_id: company.id })
+    .insert({
+      numero, cliente, cpf_cnpj_tomador, email_tomador, descricao_servico,
+      tipo, valor, moeda, recorrente, data_emissao,
+      status: 'pending', company_id: company.id
+    })
     .select().single();
   if (error) throw error;
   return data;
