@@ -107,12 +107,17 @@ async function doLogout() {
   location.reload();
 }
 
+window.doLogin = doLogin;
+window.doLogout = doLogout;
+
 /* ════════════════════════════════════════════════
    CRIAR CONTA — só abre o onboarding
 ════════════════════════════════════════════════ */
 function doRegister() {
   showOnboardingScreen(true);
 }
+
+window.doRegister = doRegister;
 
 /* ════════════════════════════════════════════════
    ONBOARDING
