@@ -64,7 +64,6 @@ function setNFTab(filter, tabEl) {
   buildNFList(filter, document.getElementById('nfSearch').value);
 }
 function filterNFs(val) { buildNFList(_nfFilter, val); }
-function emitirNF() { closeSheet('sheet-nf'); toast('🚀','Nota fiscal emitida!'); }
 
 /* ════════════════════
    EXTRATO

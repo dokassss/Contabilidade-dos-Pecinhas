@@ -54,6 +54,17 @@ async function initApp() {
     // Usa a primeira empresa como ativa por padrão (se houver)
     _activeCompany = _companies.length > 0 ? _companies[0] : null;
 
+    // Update greeting with profile name
+    if (_profile) {
+      const hour = new Date().getHours();
+      const greet = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
+      const firstName = (_profile.nome || _profile.email || '').split(' ')[0];
+      const greetHello = document.getElementById('greet-hello');
+      const greetName  = document.getElementById('greet-name');
+      if (greetHello) greetHello.textContent = greet + ', ' + firstName + ' 👋';
+      if (greetName)  greetName.textContent  = _profile.nome || _profile.email || '';
+    }
+
     if (_activeCompany) {
       applyCompanyData(_activeCompany);
       applyDefaultType(_activeCompany.porte || 'EPP');
@@ -316,118 +327,21 @@ function showOnboardingScreen(visible) {
 }
 window.showOnboardingScreen = showOnboardingScreen;
 
-function obSelectTipo(tipo) {
-  document.getElementById('ob-porte').value = tipo;
-  ['ME', 'EPP'].forEach(t => {
-    const card = document.getElementById('ob-card-' + t.toLowerCase());
-    if (card) card.style.borderColor = t === tipo ? 'var(--accent)' : 'var(--border)';
-  });
-}
-window.obSelectTipo = obSelectTipo;
-
-function obCancelar() {
-  showOnboardingScreen(false);
-  showLoginScreen(true);
-}
-window.obCancelar = obCancelar;
-
-function obNextStep(step) {
-  if (step === 3) {
-    // Populate confirmation screen
-    const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val || '—'; };
-    setText('ob-confirm-username', document.getElementById('ob-user-name')?.value);
-    setText('ob-confirm-cpf',      document.getElementById('ob-user-cpf')?.value);
-    setText('ob-confirm-fone',     document.getElementById('ob-user-fone')?.value);
-    setText('ob-confirm-porte',    document.getElementById('ob-porte')?.value);
-    setText('ob-confirm-nome',     document.getElementById('ob-name')?.value);
-    setText('ob-confirm-cnpj',     document.getElementById('ob-cnpj')?.value);
-    setText('ob-confirm-email',    document.getElementById('ob-email')?.value);
-  }
-  [1, 2, 3].forEach(s => {
-    const el = document.getElementById('ob-step-' + s);
-    if (el) el.style.display = s === step ? 'block' : 'none';
-  });
-}
-window.obNextStep = obNextStep;
-
-async function cadastrarEmpresa() {
-  const email    = document.getElementById('ob-email').value.trim();
-  const pass     = document.getElementById('ob-pass').value;
-  const name     = document.getElementById('ob-name').value.trim();
-  const cnpj     = document.getElementById('ob-cnpj').value.trim();
-  const porte    = document.getElementById('ob-porte').value || 'ME';
-  // campos novos
-  const cidade              = document.getElementById('ob-cidade').value.trim();
-  const codigo_ibge         = document.getElementById('ob-codigo-ibge').value.trim();
-  const inscricao_municipal = document.getElementById('ob-inscricao-municipal').value.trim();
-  const cnae                = document.getElementById('ob-cnae').value.trim();
-  const item_lista_servico  = document.getElementById('ob-item-lista-servico').value.trim();
-  const aliquota_iss        = document.getElementById('ob-aliquota-iss').value;
-
-  // validações dos novos campos
-  if (!cidade)              { toast('⚠️', 'Informe a cidade'); return; }
-  if (!codigo_ibge)         { toast('⚠️', 'Informe o código IBGE'); return; }
-  if (!inscricao_municipal) { toast('⚠️', 'Informe a inscrição municipal'); return; }
-  if (!cnae)                { toast('⚠️', 'Informe o CNAE'); return; }
-  if (!item_lista_servico)  { toast('⚠️', 'Informe o item da lista de serviço'); return; }
-
-  showLoading(true);
-  try {
-    const { data, error } = await sb.auth.signUp({ email, password: pass });
-    if (error) throw error;
-
-    const isConfirmed = !!(data?.user?.confirmed_at || data?.user?.email_confirmed_at);
-    const companyPayload = { name, cnpj, porte, cidade, codigo_ibge, inscricao_municipal, cnae, item_lista_servico, aliquota_iss };
-
-    if (isConfirmed) {
-      await createCompany(companyPayload);
-    } else {
-      try { localStorage.setItem('_pendingCompany', JSON.stringify(companyPayload)); } catch(e) {}
-    }
-
-    showLoading(false);
-    showOnboardingScreen(false);
-    mostrarConfirmacaoEmail(email);
-  } catch (err) {
-    showLoading(false);
-    toast('❌', err.message || 'Erro ao criar conta');
-  }
-}
-window.cadastrarEmpresa = cadastrarEmpresa;
-
 /* ════════════════════════════════════════════════
    NF / IMPOSTOS / PRÓ-LABORE
 ════════════════════════════════════════════════ */
 window.emitirNF = async function() {
-  const tipo             = document.getElementById('nf-tipo')?.value || 'NFS-e';
-  const cliente          = document.getElementById('nf-cliente')?.value?.trim();
-  const cpf_cnpj_tomador = document.getElementById('nf-cpf-cnpj')?.value?.trim();
-  const email_tomador    = document.getElementById('nf-email-tomador')?.value?.trim();
-  const valor            = document.getElementById('nf-valor')?.value;
-  const descricao_servico = document.getElementById('nf-descricao')?.value?.trim();
-
-  if (!cliente)          { toast('⚠️', 'Informe o nome do cliente'); return; }
-  if (!cpf_cnpj_tomador) { toast('⚠️', 'Informe o CPF/CNPJ do tomador'); return; }
-  if (!email_tomador)    { toast('⚠️', 'Informe o e-mail do tomador'); return; }
-  if (!valor)            { toast('⚠️', 'Informe o valor'); return; }
-
-  const numero = String(Date.now()).slice(-6);
-
+  const numero  = document.getElementById('nf-numero')?.value;
+  const cliente = document.getElementById('nf-cliente')?.value;
+  const valor   = document.getElementById('nf-valor')?.value;
+  const tipo    = document.getElementById('nf-tipo')?.value || 'NFS-e';
+  if (!numero || !cliente || !valor) { toast('⚠️', 'Preencha todos os campos'); return; }
   try {
-    await createNF({
-      numero, cliente, cpf_cnpj_tomador, email_tomador, descricao_servico,
-      tipo, valor: parseFloat(valor.replace(',', '.')),
-      data_emissao: new Date().toISOString().slice(0, 10)
-    });
-
-    toast('🚀', 'Nota fiscal registrada!');
+    await createNF({ numero, cliente, tipo, valor: parseFloat(valor.replace(',','.')), data_emissao: new Date().toISOString().slice(0,10) });
     closeSheet('sheet-nf');
-    _nfData = await fetchNFs();
-    NFs.length = 0; NFs.push(..._nfData);
-    buildNFList();
-  } catch (err) {
-    toast('❌', 'Erro: ' + err.message);
-  }
+    toast('🚀', 'Nota fiscal emitida!');
+    _nfData = await fetchNFs(); NFs.length = 0; NFs.push(..._nfData); buildNFList();
+  } catch (err) { toast('❌', 'Erro: ' + err.message); }
 };
 
 window.marcarImpostoPago = async function(uuid) {
