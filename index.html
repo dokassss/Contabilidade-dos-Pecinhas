@@ -78,32 +78,7 @@
   </div>
 </div>
 
-<!-- ══ SHEET: ADICIONAR EMPRESA ══════════════════════════════ -->
-<div id="sheet-add-company" class="overlay" onclick="closeSheetOutside(event,'sheet-add-company')">
-  <div class="sheet" style="padding:24px;display:flex;flex-direction:column;gap:16px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-      <div style="font-family:var(--f-mono);font-size:12px;font-weight:700;color:var(--bright);letter-spacing:1px">NOVA EMPRESA</div>
-      <button onclick="closeSheet('sheet-add-company')" style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;">✕</button>
-    </div>
-    <div class="field" style="margin:0">
-      <div class="flabel">PORTE</div>
-      <select id="add-company-porte" class="finput" style="cursor:pointer;">
-        <option value="MEI">MEI — Microempreendedor (até R$ 81k/ano)</option>
-        <option value="ME" selected>ME — Microempresa (até R$ 360k/ano)</option>
-        <option value="EPP">EPP — Pequeno Porte (até R$ 4,8mi/ano)</option>
-      </select>
-    </div>
-    <div class="field" style="margin:0">
-      <div class="flabel">NOME DA EMPRESA</div>
-      <input id="add-company-name" class="finput" type="text" placeholder="Ex: Fantinny Entretenimentos">
-    </div>
-    <div class="field" style="margin:0">
-      <div class="flabel">CNPJ</div>
-      <input id="add-company-cnpj" class="finput" type="text" placeholder="00.000.000/0001-00" oninput="maskCNPJ(this)" maxlength="18">
-    </div>
-    <button class="btn-primary" style="margin-top:4px;" onclick="doAddCompany()">Adicionar empresa 🚀</button>
-  </div>
-</div>
+
 
 
 <!-- ══ ONBOARDING SCREEN ══════════════════════════════════ -->
@@ -934,10 +909,34 @@
       <div class="ni-label">PERFIL</div>
     </div>
   </div>
-</div><!-- /phone -->
 
-<!-- Modal: Onboarding — Cadastro de Empresa -->
 
+<!-- ══ SHEET: ADICIONAR EMPRESA ══════════════════════════════ -->
+<div id="sheet-add-company" class="overlay" onclick="closeSheetOutside(event,'sheet-add-company')">
+  <div class="sheet" style="padding:24px;display:flex;flex-direction:column;gap:16px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+      <div style="font-family:var(--f-mono);font-size:12px;font-weight:700;color:var(--bright);letter-spacing:1px">NOVA EMPRESA</div>
+      <button onclick="closeSheet('sheet-add-company')" style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;">✕</button>
+    </div>
+    <div class="field" style="margin:0">
+      <div class="flabel">PORTE</div>
+      <select id="add-company-porte" class="finput" style="cursor:pointer;">
+        <option value="MEI">MEI — Microempreendedor (até R$ 81k/ano)</option>
+        <option value="ME" selected>ME — Microempresa (até R$ 360k/ano)</option>
+        <option value="EPP">EPP — Pequeno Porte (até R$ 4,8mi/ano)</option>
+      </select>
+    </div>
+    <div class="field" style="margin:0">
+      <div class="flabel">NOME DA EMPRESA</div>
+      <input id="add-company-name" class="finput" type="text" placeholder="Ex: Fantinny Entretenimentos">
+    </div>
+    <div class="field" style="margin:0">
+      <div class="flabel">CNPJ</div>
+      <input id="add-company-cnpj" class="finput" type="text" placeholder="00.000.000/0001-00" oninput="maskCNPJ(this)" maxlength="18">
+    </div>
+    <button class="btn-primary" style="margin-top:4px;" onclick="doAddCompany()">Adicionar empresa 🚀</button>
+  </div>
+</div>
 
 <!-- Modal: Nova NF -->
 <div class="overlay" id="sheet-nf" onclick="closeSheetOutside(event,'sheet-nf')">
@@ -969,13 +968,19 @@
       <input id="nf-descricao" class="finput" type="text" placeholder="Desenvolvimento de software — fev/25">
     </div>
     <div style="display:flex;align-items:center;gap:10px;padding:10px 0 18px">
-      <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+      <div id="nf-recorrente" class="toggle on" onclick="this.classList.toggle('on')"></div>
       <span style="font-family:var(--f-mono);font-size:10px;color:var(--muted);letter-spacing:.5px">EMISSÃO RECORRENTE MENSAL</span>
     </div>
     <button class="btn-primary" onclick="emitirNF()">Emitir Nota Fiscal</button>
     <button class="btn-ghost" onclick="closeSheet('sheet-nf')">Cancelar</button>
   </div>
 </div>
+
+
+</div><!-- /phone -->
+
+<!-- Modal: Onboarding — Cadastro de Empresa -->
+
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="js/data.js"></script>

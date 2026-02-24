@@ -593,3 +593,12 @@ body[data-theme="light"] {
   align-items: center !important;
   justify-content: center !important;
 }
+
+/* ID Card field wrapper (inside .id-grid) */
+.id-field { /* layout handled by parent grid */ }
+
+/* ID Card brand logo container */
+.id-logo {
+  display: flex; flex-direction: column; justify-content: flex-start;
+}
+
