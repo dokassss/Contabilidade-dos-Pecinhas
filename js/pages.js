@@ -9,34 +9,10 @@
    Arrays globais são populados por loadAllData()
    em main-supabase.js antes de qualquer build ser chamado.
 
-   Estado (_hidden, _nfFilter, _calDate, _chartMode)
+   Estado (window._hidden, window._nfFilter, window._calDate, window._chartMode)
    declarado em state.js — leitura direta aqui.
 ════════════════════════════════════════════════ */
 
-/* ── UTILITÁRIOS DE FORMATAÇÃO ──────────────── */
-
-/** Envolve a parte de centavos num <span class="cents"> */
-function fmtVal(v) {
-  if (!v || v === '—') return v;
-  const m = String(v).match(/^(.*),(\d{2})$/);
-  if (!m) return v;
-  return m[1] + '<span class="cents">,' + m[2] + '</span>';
-}
-
-/** Formata "R$ X.XXX,XX" aplicando fmtVal nos centavos */
-function fmtBRL(v) {
-  if (!v || v === '—') return v;
-  if (v.startsWith('R$ ')) return 'R$ ' + fmtVal(v.slice(3));
-  return fmtVal(v);
-}
-
-/**
- * Renderiza um placeholder de estado vazio padronizado.
- * @param {string} ico   - emoji
- * @param {string} titulo
- * @param {string} [sub] - linha secundária opcional
- * @returns {string} HTML
- */
 function _emptyState(ico, titulo, sub = '') {
   return `
     <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;
@@ -48,118 +24,27 @@ function _emptyState(ico, titulo, sub = '') {
     </div>`;
 }
 
-/* ════════════════════
-   NOTAS FISCAIS
-════════════════════ */
 
-/** Timer de debounce para a busca por texto — evita N roundtrips enquanto o usuário digita */
-let _nfSearchTimer = null;
+/* ── UTILITÁRIOS DE FORMATAÇÃO ──────────────── */
 
-/**
- * Busca NFs no Supabase com os filtros ativos e reconstrói a lista.
- * Async porque vai ao banco — substitui a filtragem em memória sobre NFs[].
- *
- * @param {string} [filter] - 'todas' | 'pagas' | 'pendentes' | 'recorrentes'
- * @param {string} [search] - texto livre (debounced)
- */
-async function buildNFList(filter, search) {
-  filter = filter || _nfFilter;
-  search = (search !== undefined ? search : (document.getElementById('nfSearch')?.value || '')).trim();
 
-  const el = document.getElementById('nfList');
-  if (!el) return;
-
-  // Feedback visual imediato enquanto aguarda resposta
-  el.innerHTML = '<div style="text-align:center;padding:32px;font-family:var(--f-mono);font-size:10px;color:var(--muted)">CARREGANDO…</div>';
-
-  let list = [];
-  try {
-    list = await fetchNFs({
-      companyId: (typeof _activeCompany !== 'undefined' && _activeCompany?.id) || undefined,
-      status:    filter !== 'todas' ? filter : undefined,
-      search:    search || undefined,
-    });
-
-    // Sincroniza array global para que outros módulos (ex.: buildCalendar)
-    // reflitam o subconjunto filtrado sem nova chamada de rede.
-    NFs.length = 0;
-    NFs.push(...list);
-  } catch (err) {
-    console.warn('[buildNFList]', err);
-    el.innerHTML = _emptyState('⚠️', 'ERRO AO CARREGAR', 'Verifique sua conexão e tente novamente.');
-    return;
-  }
-
-  el.innerHTML = '';
-
-  if (!list.length) {
-    el.innerHTML = _emptyState('🔍', 'NENHUM RESULTADO',
-      filter !== 'todas' ? 'Tente mudar o filtro ou a busca.' : 'Emita sua primeira nota fiscal.');
-    return;
-  }
-
-  list.forEach(nf => {
-    const s    = STATUS_CFG[nf.status];
-    const card = document.createElement('div');
-    card.className = 'nf-card';
-    card.innerHTML = `
-      <div class="nf-main">
-        <div class="nf-ico">${nf.ico}</div>
-        <div class="nf-body">
-          <div class="nf-client">${nf.client}</div>
-          <div class="nf-meta">${nf.id} · ${nf.date}${nf.rec ? ' · <span style="color:var(--accent)">●REC</span>' : ''}</div>
-        </div>
-        <div class="nf-right">
-          <div class="nf-val val" data-raw="${nf.raw}">${fmtVal(nf.val)}</div>
-          <div class="badge ${s.cls}">${s.label}</div>
-        </div>
-      </div>
-      <div class="nf-expand">
-        <div class="nf-btns">
-          <button class="nf-btn s" onclick="event.stopPropagation();toast('📄','PDF baixado')">⬇ PDF</button>
-          <button class="nf-btn s" onclick="event.stopPropagation();toast('📤','Enviado por email')">📤 Enviar</button>
-          <button class="nf-btn p" onclick="event.stopPropagation();toast('🔄','Nota duplicada')">Duplicar</button>
-        </div>
-      </div>`;
-    card.addEventListener('click', () => card.classList.toggle('open'));
-    el.appendChild(card);
-  });
-}
-
-/**
- * Troca a aba ativa e dispara buildNFList com o filtro correto.
- * Síncrona — buildNFList cuida da assincronicidade internamente.
- */
-function setNFTab(filter, tabEl) {
-  document.querySelectorAll('.tab-row .tab').forEach(t => t.classList.remove('on'));
-  tabEl.classList.add('on');
-  _nfFilter = filter;
-  buildNFList(filter, document.getElementById('nfSearch')?.value || '');
-}
 
 /**
  * Chamada pelo oninput do campo de busca.
  * Debounce de 350 ms para não disparar uma query por tecla.
  */
-function filterNFs(val) {
-  clearTimeout(_nfSearchTimer);
-  _nfSearchTimer = setTimeout(() => buildNFList(_nfFilter, val), 350);
-}
 
-/* ════════════════════
-   EXTRATO
-════════════════════ */
 function buildExtrato() {
   const el = document.getElementById('extratoList');
   if (!el) return;
   el.innerHTML = '';
 
-  if (!EXTRATO.length) {
+  if (!window.EXTRATO.length) {
     el.innerHTML = _emptyState('📒', 'SEM MOVIMENTAÇÕES', 'As transações do mês aparecerão aqui.');
     return;
   }
 
-  EXTRATO.forEach(grp => {
+  window.EXTRATO.forEach(grp => {
     const sep = document.createElement('div');
     sep.className = 'ext-sep';
     sep.textContent = grp.grp;
@@ -182,7 +67,7 @@ function buildExtrato() {
 }
 
 /* ════════════════════
-   A PAGAR / RECEBER
+   A window.PAGAR / window.RECEBER
 ════════════════════ */
 
 function makePayRow(item, i, type) {
@@ -199,7 +84,7 @@ function makePayRow(item, i, type) {
       <div class="pay-when" style="color:${item.color}">${item.when}</div>
     </div>
     <div class="pay-right">
-      <div class="pay-val val" style="color:${item.color}" data-raw="${item.val}">${fmtVal(item.val)}</div>
+      <div class="pay-val val" style="color:${item.color}" data-raw="${item.raw ?? item.val}">${fmtVal(item.val)}</div>
       <button class="pay-btn" style="${btnStyle}"
         onclick="event.stopPropagation();markPay(${i},'${type}')">${btnLabel}</button>
     </div>`;
@@ -210,22 +95,22 @@ function buildPagar() {
   const el = document.getElementById('pagarList');
   if (!el) return;
   el.innerHTML = '';
-  if (!PAGAR.length) {
+  if (!window.PAGAR.length) {
     el.innerHTML = _emptyState('✅', 'NADA A PAGAR', 'Nenhuma conta pendente nos próximos 30 dias.');
     return;
   }
-  PAGAR.forEach((row, i) => el.appendChild(makePayRow(row, i, 'pagar')));
+  window.PAGAR.forEach((row, i) => el.appendChild(makePayRow(row, i, 'pagar')));
 }
 
 function buildReceber() {
   const el = document.getElementById('receberList');
   if (!el) return;
   el.innerHTML = '';
-  if (!RECEBER.length) {
+  if (!window.RECEBER.length) {
     el.innerHTML = _emptyState('💸', 'NADA A RECEBER', 'Nenhuma nota pendente ou vencida.');
     return;
   }
-  RECEBER.forEach((row, i) => el.appendChild(makePayRow(row, i, 'receber')));
+  window.RECEBER.forEach((row, i) => el.appendChild(makePayRow(row, i, 'receber')));
 }
 
 /**
@@ -236,7 +121,7 @@ function buildReceber() {
  * @param {string} type - 'pagar' | 'receber'
  */
 async function markPay(i, type) {
-  const arr     = type === 'pagar' ? PAGAR : RECEBER;
+  const arr     = type === 'pagar' ? window.PAGAR : window.RECEBER;
   const rebuild = type === 'pagar' ? buildPagar : buildReceber;
   const item    = arr[i];
   if (!item) return;
@@ -280,20 +165,20 @@ function setFtab(tab, tabEl) {
 }
 
 /* ════════════════════
-   IMPOSTOS
+   window.IMPOSTOS
 ════════════════════ */
 function buildTaxList() {
   const el = document.getElementById('taxList');
   if (!el) return;
   el.innerHTML = '';
 
-  if (!IMPOSTOS.length) {
-    el.innerHTML = _emptyState('🧾', 'SEM IMPOSTOS REGISTRADOS',
+  if (!window.IMPOSTOS.length) {
+    el.innerHTML = _emptyState('🧾', 'SEM window.IMPOSTOS REGISTRADOS',
       'Nenhum imposto encontrado para a empresa selecionada.');
     return;
   }
 
-  IMPOSTOS.forEach((row, i) => {
+  window.IMPOSTOS.forEach((row, i) => {
     const div = document.createElement('div');
     div.className = 'tax-row';
     div.innerHTML = `
@@ -349,10 +234,10 @@ function buildCalendar() {
   const el = document.getElementById('calGrid');
   if (!el) return;
 
-  const year  = _calDate.getFullYear();
-  const month = _calDate.getMonth(); // 0-indexed
+  const year  = window._calDate.getFullYear();
+  const month = window._calDate.getMonth(); // 0-indexed
 
-  document.getElementById('calMonth').textContent = MONTHS_PT[month] + ' ' + year;
+  document.getElementById('calMonth').textContent = window.MONTHS_PT[month] + ' ' + year;
   el.innerHTML = '';
 
   // Cabeçalho dos dias da semana
@@ -377,7 +262,7 @@ function buildCalendar() {
   }
 
   // Impostos
-  IMPOSTOS.forEach(imp => {
+  window.IMPOSTOS.forEach(imp => {
     if (!imp.vencimento) return;
     if (imp.status === 'pago') {
       addEvento(imp.vencimento, 'green', imp.name + ' — pago ✓');
@@ -388,16 +273,6 @@ function buildCalendar() {
     }
   });
 
-  // NFs — apenas quando _rawDate estiver disponível no objeto
-  NFs.forEach(nf => {
-    if (nf._rawDate) {
-      if (nf.status === 'paid') {
-        addEvento(nf._rawDate, 'green', 'NF ' + nf.id + ' — recebida ✓');
-      } else {
-        addEvento(nf._rawDate, 'amber', 'NF ' + nf.id + ' — ' + (nf.status === 'overdue' ? 'VENCIDA' : 'pendente'));
-      }
-    }
-  });
 
   // ── Renderizar células ──────────────────────────────────────────
   const firstDay  = new Date(year, month, 1).getDay();
@@ -442,7 +317,7 @@ function buildCalendar() {
 }
 
 function shiftMonth(delta) {
-  _calDate.setMonth(_calDate.getMonth() + delta);
+  window._calDate.setMonth(window._calDate.getMonth() + delta);
   buildCalendar();
 }
 
@@ -469,7 +344,7 @@ function updateSim(val) {
   delete simValEl.dataset.orig;
   simValEl.dataset.raw = val;
   simValEl.innerHTML = 'R$ ' + val.toLocaleString('pt-BR') + '<span class="cents">,00</span>';
-  if (_hidden) {
+  if (window._hidden) {
     simValEl.dataset.orig = simValEl.innerHTML;
     simValEl.innerHTML = '<span style="letter-spacing:2px">••••</span>';
   }
@@ -483,7 +358,7 @@ function updateSim(val) {
   frPctEl.dataset.raw = frPct.toFixed(1) + 'pct';
   frPctEl.innerHTML   = frPct.toFixed(1) + '%';
   frPctEl.className   = 'fr-pct val ' + (isB3 ? 'good' : 'warn');
-  if (_hidden) {
+  if (window._hidden) {
     frPctEl.dataset.orig = frPctEl.innerHTML;
     frPctEl.innerHTML = '<span style="letter-spacing:2px">••••</span>';
   }
@@ -514,7 +389,7 @@ function updateSim(val) {
     delete simSavEl.dataset.orig;
     simSavEl.dataset.raw = econ > 0 ? econ : 0;
     simSavEl.innerHTML   = econ > 0 ? 'R$ ' + econ.toLocaleString('pt-BR') + '<span class="cents">,00</span>' : '—';
-    if (_hidden && econ > 0) {
+    if (window._hidden && econ > 0) {
       simSavEl.dataset.orig = simSavEl.innerHTML;
       simSavEl.innerHTML = '<span style="letter-spacing:2px">••••</span>';
     }
@@ -543,13 +418,13 @@ function buildPLHist() {
   if (!el) return;
   el.innerHTML = '';
 
-  if (!PL_HIST.length) {
+  if (!window.PL_HIST.length) {
     el.innerHTML = _emptyState('📋', 'SEM HISTÓRICO DE PRÓ-LABORE',
       'Os registros mensais aparecerão aqui\nassim que forem lançados.');
     return;
   }
 
-  PL_HIST.forEach(item => {
+  window.PL_HIST.forEach(item => {
     const div = document.createElement('div');
     div.className = 'plh';
     div.innerHTML = `
@@ -571,9 +446,7 @@ function buildPLHist() {
    EXPOR AO ESCOPO GLOBAL
    (necessário para handlers inline no HTML)
 ════════════════════ */
-window.setNFTab   = setNFTab;
 window.markPay    = markPay;
-window.filterNFs  = filterNFs;
 window.setFtab    = setFtab;
 window.shiftMonth = shiftMonth;
 window.updateSim  = updateSim;

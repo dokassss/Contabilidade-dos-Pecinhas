@@ -9,8 +9,9 @@
 /* ── PERFIL PESSOAL ─────────────────────────── */
 
 async function fetchProfile() {
-  const { data: { user } } = await sb.auth.getUser();
-  const { data, error } = await sb.from('profiles')
+  const { data: { user }, error: authError } = await window.sb.auth.getUser();
+  if (authError || !user) throw new Error('Sessão inválida. Faça login novamente.');
+  const { data, error } = await window.sb.from('profiles')
     .select('*')
     .eq('user_id', user.id)
     .maybeSingle();
@@ -27,7 +28,7 @@ async function fetchProfile() {
 }
 
 async function createProfile({ userId, nome, nascimento, cpf, telefone, email }) {
-  const { data, error } = await sb.from('profiles')
+  const { data, error } = await window.sb.from('profiles')
     .insert({ user_id: userId, nome, nascimento, cpf, telefone, email })
     .select()
     .single();
@@ -40,8 +41,9 @@ async function createProfile({ userId, nome, nascimento, cpf, telefone, email })
 /* ── EMPRESAS ───────────────────────────────── */
 
 async function fetchCompanies() {
-  const { data: { user } } = await sb.auth.getUser();
-  const { data, error } = await sb.from('companies')
+  const { data: { user }, error: authError } = await window.sb.auth.getUser();
+  if (authError || !user) throw new Error('Sessão inválida. Faça login novamente.');
+  const { data, error } = await window.sb.from('companies')
     .select('*')
     .eq('user_id', user.id)
     .order('created_at', { ascending: true });
@@ -50,7 +52,7 @@ async function fetchCompanies() {
 }
 
 async function saveCompany(fields) {
-  const { data, error } = await sb.from('companies')
+  const { data, error } = await window.sb.from('companies')
     .update(fields)
     .eq('id', fields.id)
     .select()
@@ -60,8 +62,8 @@ async function saveCompany(fields) {
 }
 
 async function createCompany({ name, cnpj, porte }) {
-  const { data: { user } } = await sb.auth.getUser();
-  const { data, error } = await sb.from('companies')
+  const { data: { user } } = await window.sb.auth.getUser();
+  const { data, error } = await window.sb.from('companies')
     .insert({ name, cnpj, porte, user_id: user.id, regime: 'simples' })
     .select()
     .single();
@@ -71,71 +73,6 @@ async function createCompany({ name, cnpj, porte }) {
 
 /* ── NOTAS FISCAIS ──────────────────────────── */
 
-/**
- * @param {object}  opts
- * @param {string}  [opts.status]      - 'pagas' | 'pendentes' | 'recorrentes'
- * @param {string}  [opts.search]      - filtro ilike no campo cliente
- * @param {string}  [opts.companyId]   - UUID da empresa
- * @param {number}  [opts.page=0]      - página (0-indexada)
- * @param {number}  [opts.pageSize=30] - registros por página
- */
-async function fetchNFs({ status, search, companyId, page = 0, pageSize = 30 } = {}) {
-  const from = page * pageSize;
-  const to   = from + pageSize - 1;
-
-  let query = sb.from('notas_fiscais')
-    .select('*')
-    .order('data_emissao', { ascending: false })
-    .range(from, to);
-
-  if (companyId)                query = query.eq('company_id', companyId);
-  if (status === 'pagas')       query = query.eq('status', 'paid');
-  if (status === 'pendentes')   query = query.in('status', ['pending', 'overdue']);
-  if (status === 'recorrentes') query = query.eq('recorrente', true);
-  if (search)                   query = query.ilike('cliente', `%${search}%`);
-
-  const { data, error } = await query;
-  if (error) throw error;
-
-  return (data || []).map(nf => ({
-    id:     '#' + nf.numero,
-    client: nf.cliente,
-    ico:    nf.icone || '🧾',
-    date:   new Date(nf.data_emissao + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' }),
-    val:    nf.moeda === 'BRL'
-              ? 'R$ ' + Number(nf.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })
-              : '$'   + Number(nf.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 }),
-    raw:    Math.round(nf.valor),
-    status: nf.status,
-    rec:    nf.recorrente,
-    type:   nf.tipo,
-    _id:    nf.id,
-  }));
-}
-
-/**
- * Cria uma nota fiscal. companyId é explícito — nunca busca companies[0] internamente.
- *
- * @param {object} opts
- * @param {string} opts.companyId    - UUID da empresa (obrigatório)
- * @param {string} opts.numero
- * @param {string} opts.cliente
- * @param {string} opts.tipo
- * @param {number} opts.valor
- * @param {string} [opts.descricao]
- * @param {string} [opts.moeda]
- * @param {boolean}[opts.recorrente]
- * @param {string} opts.data_emissao - YYYY-MM-DD
- */
-async function createNF({ companyId, numero, cliente, tipo, valor, descricao = '', moeda = 'BRL', recorrente = false, data_emissao }) {
-  if (!companyId) throw new Error('createNF: companyId é obrigatório');
-  const { data, error } = await sb.from('notas_fiscais')
-    .insert({ numero, cliente, tipo, valor, descricao, moeda, recorrente, data_emissao, status: 'pending', company_id: companyId })
-    .select()
-    .single();
-  if (error) throw error;
-  return data;
-}
 
 /**
  * Marca uma NF como paga (status → 'paid').
@@ -144,7 +81,7 @@ async function createNF({ companyId, numero, cliente, tipo, valor, descricao = '
  * @param {string} uuid - id da nota fiscal
  */
 async function marcarNFRecebida(uuid) {
-  const { error } = await sb.from('notas_fiscais')
+  const { error } = await window.sb.from('notas_fiscais')
     .update({ status: 'paid' })
     .eq('id', uuid);
   if (error) throw error;
@@ -153,7 +90,7 @@ async function marcarNFRecebida(uuid) {
 /* ── EXTRATO ────────────────────────────────── */
 
 async function fetchExtrato({ limit = 30, companyId } = {}) {
-  let query = sb.from('transacoes')
+  let query = window.sb.from('transacoes')
     .select('*')
     .order('data', { ascending: false })
     .limit(limit);
@@ -194,7 +131,7 @@ const TAX_COLORS = {
 };
 
 async function fetchImpostos({ companyId } = {}) {
-  let query = sb.from('impostos')
+  let query = window.sb.from('impostos')
     .select('*')
     .order('vencimento', { ascending: true });
   if (companyId) query = query.eq('company_id', companyId);
@@ -231,7 +168,7 @@ async function fetchImpostos({ companyId } = {}) {
 }
 
 async function pagarImposto(uuid) {
-  const { error } = await sb.from('impostos').update({ status: 'pago' }).eq('id', uuid);
+  const { error } = await window.sb.from('impostos').update({ status: 'pago' }).eq('id', uuid);
   if (error) throw error;
 }
 
@@ -240,7 +177,7 @@ async function pagarImposto(uuid) {
 const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 
 async function fetchProlabore({ companyId } = {}) {
-  let query = sb.from('prolabore')
+  let query = window.sb.from('prolabore')
     .select('*')
     .order('competencia', { ascending: false })
     .limit(12);
@@ -264,7 +201,7 @@ async function fetchProlabore({ companyId } = {}) {
 }
 
 async function marcarProlaborePago(uuid) {
-  const { error } = await sb.from('prolabore').update({ pago: true }).eq('id', uuid);
+  const { error } = await window.sb.from('prolabore').update({ pago: true }).eq('id', uuid);
   if (error) throw error;
 }
 
@@ -282,7 +219,7 @@ async function fetchPagar({ companyId } = {}) {
   const inicioMes = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}-01`;
   const limite30  = new Date(hoje.getTime() + 30 * 86400000).toISOString().slice(0, 10);
 
-  let query = sb.from('contas_pagar')
+  let query = window.sb.from('contas_pagar')
     .select('*')
     .eq('status', 'pendente')
     .gte('vencimento', inicioMes)
@@ -309,6 +246,7 @@ async function fetchPagar({ companyId } = {}) {
       name:  row.descricao,
       when,
       val:   Number(row.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 }),
+      raw:   Math.round(Number(row.valor)),
       color,
       done:  false,
       _id:   row.id,
@@ -323,7 +261,7 @@ async function fetchPagar({ companyId } = {}) {
  * @param {string} uuid - id da conta em contas_pagar
  */
 async function pagarConta(uuid) {
-  const { error } = await sb.from('contas_pagar')
+  const { error } = await window.sb.from('contas_pagar')
     .update({ status: 'pago' })
     .eq('id', uuid);
   if (error) throw error;
@@ -339,33 +277,7 @@ async function pagarConta(uuid) {
  * @param {string} [opts.companyId]
  */
 async function fetchReceber({ companyId } = {}) {
-  let query = sb.from('notas_fiscais')
-    .select('id, numero, cliente, valor, moeda, status, data_emissao, icone')
-    .in('status', ['pending', 'overdue'])
-    .order('data_emissao', { ascending: false })
-    .limit(50);
-
-  if (companyId) query = query.eq('company_id', companyId);
-
-  const { data, error } = await query;
-  if (error) throw error;
-
-  return (data || []).map(nf => {
-    const due   = new Date(nf.data_emissao + 'T12:00:00');
-    const color = nf.status === 'overdue' ? 'var(--red)' : 'var(--green)';
-    const val   = nf.moeda === 'BRL'
-      ? 'R$ ' + Number(nf.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })
-      : '$'   + Number(nf.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-    return {
-      ico:   nf.icone || '💼',
-      name:  nf.cliente,
-      when:  `${due.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} — ${nf.moeda !== 'BRL' ? nf.moeda + ' · ' : ''}NF #${nf.numero}`,
-      val,
-      color,
-      done:  false,
-      _id:   nf.id,
-    };
-  });
+  return [];
 }
 
 /* ── FLUXO DE CAIXA (gráfico) ───────────────── */
@@ -394,7 +306,7 @@ async function fetchCashFlow({ months = 12, companyId } = {}) {
 
     result.months.push(MESES_ABREV[mon]);
 
-    let q = sb.from('transacoes')
+    let q = window.sb.from('transacoes')
       .select('valor, direcao')
       .gte('data', ini)
       .lte('data', fim);
@@ -430,22 +342,19 @@ async function fetchKPIs({ companyId } = {}) {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`;
   })();
 
-  let nfsQ = sb.from('notas_fiscais').select('valor, status').gte('data_emissao', mes);
-  let txQ  = sb.from('transacoes').select('valor, direcao').gte('data', mes);
-  let impQ = sb.from('impostos').select('valor, status').eq('status', 'pendente');
+  let txQ  = window.sb.from('transacoes').select('valor, direcao').gte('data', mes);
+  let impQ = window.sb.from('impostos').select('valor, status').eq('status', 'pendente');
 
   if (companyId) {
-    nfsQ = nfsQ.eq('company_id', companyId);
     txQ  = txQ.eq('company_id', companyId);
     impQ = impQ.eq('company_id', companyId);
   }
 
-  const [nfsRes, txRes, impRes] = await Promise.all([nfsQ, txQ, impQ]);
+  const [txRes, impRes] = await Promise.all([txQ, impQ]);
 
   const receita      = (txRes.data  || []).filter(t => t.direcao === 'in').reduce((s, t)  => s + Number(t.valor), 0);
   const despesa      = (txRes.data  || []).filter(t => t.direcao === 'out').reduce((s, t) => s + Number(t.valor), 0);
-  const aReceber     = (nfsRes.data || []).filter(n => n.status === 'pending').reduce((s, n) => s + Number(n.valor), 0);
   const impostoTotal = (impRes.data || []).reduce((s, i) => s + Number(i.valor || 0), 0);
 
-  return { receita, despesa, resultado: receita - despesa, aReceber, impostoTotal };
+  return { receita, despesa, resultado: receita - despesa, aReceber: 0, impostoTotal };
 }

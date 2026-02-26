@@ -2,12 +2,56 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
+
+<!-- ═══ VIEWPORT & MOBILE ════════════════════════════════════════════ -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-title" content="Contábil">
+
+<!-- ═══ SEO / BÁSICAS ════════════════════════════════════════════════ -->
 <title>Contábil — Gestão Financeira PJ</title>
-<meta name="description" content="App de gestão financeira para MEI, ME e EPP">
+<meta name="description" content="Gerencie notas fiscais, impostos, fluxo de caixa e pró-labore da sua empresa MEI, ME ou EPP em um só lugar.">
+<meta name="keywords" content="gestão financeira, MEI, microempresa, EPP, notas fiscais, impostos, fluxo de caixa, pró-labore, DAS, Simples Nacional">
+<meta name="author" content="Contábil">
+<meta name="robots" content="index, follow">
+
+<!-- ═══ OPEN GRAPH (Facebook, WhatsApp, LinkedIn) ════════════════════ -->
+<meta property="og:type"        content="website">
+<meta property="og:site_name"   content="Contábil">
+<meta property="og:title"       content="Contábil — Gestão Financeira PJ">
+<meta property="og:description" content="Notas fiscais, impostos, fluxo de caixa e pró-labore para MEI, ME e EPP. Simples, rápido e direto ao ponto.">
+<meta property="og:image"       content="/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt"   content="Tela do Contábil mostrando painel financeiro">
+<meta property="og:url"         content="https://contabil.app">
+<meta property="og:locale"      content="pt_BR">
+
+<!-- ═══ TWITTER / X CARD ═════════════════════════════════════════════ -->
+<meta name="twitter:card"        content="summary_large_image">
+<meta name="twitter:site"        content="@contabilapp">
+<meta name="twitter:title"       content="Contábil — Gestão Financeira PJ">
+<meta name="twitter:description" content="Notas fiscais, impostos, fluxo de caixa e pró-labore para MEI, ME e EPP.">
+<meta name="twitter:image"       content="/og-image.png">
+<meta name="twitter:image:alt"   content="Tela do Contábil mostrando painel financeiro">
+
+<!-- ═══ PWA — MANIFEST & THEME ═══════════════════════════════════════ -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#7b61ff" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#5b3ef7" media="(prefers-color-scheme: light)">
+<!-- Ícones Apple (gerar em https://realfavicongenerator.net) -->
+<link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+
+<!-- ═══ FONTES ════════════════════════════════════════════════════════ -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<!-- ═══ ESTILOS ══════════════════════════════════════════════════════ -->
 <link rel="stylesheet" href="css/tokens.css">
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/dashboard.css">
@@ -15,12 +59,20 @@
 </head>
 <body>
 
+
+<!-- ╔══════════════════════════════════════════════════════════╗
+     ║  OVERLAYS GLOBAIS — fora do .phone                       ║
+     ╚══════════════════════════════════════════════════════════╝ -->
+
+<!-- ── LOADING OVERLAY ──────────────────────────────────────── -->
 <div id="loading-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;flex-direction:column;gap:12px;font-family:var(--f-mono);">
   <div style="width:36px;height:36px;border-radius:50%;border:3px solid rgba(255,255,255,0.15);border-top-color:var(--accent);animation:spin 0.8s linear infinite;"></div>
   <span style="color:var(--soft);font-size:11px;letter-spacing:1px">CARREGANDO...</span>
 </div>
 <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
 
+
+<!-- ── LOGIN SCREEN ──────────────────────────────────────────── -->
 <div id="login-screen" style="display:none;position:fixed;inset:0;z-index:9998;background:var(--bg);align-items:center;justify-content:center;">
   <div id="login-box" style="width:100%;max-width:340px;padding:32px 24px;background:var(--card);border:1px solid var(--border);border-radius:20px;display:flex;flex-direction:column;gap:16px;">
     <div style="text-align:center;margin-bottom:8px">
@@ -36,7 +88,8 @@
   </div>
 </div>
 
-<!-- ══ REGISTER SCREEN (Cadastro Pessoal) ═══════════════════ -->
+
+<!-- ── REGISTER SCREEN (Cadastro Pessoal) ───────────────────── -->
 <div id="register-screen" style="display:none;position:fixed;inset:0;z-index:9999;background:var(--bg);align-items:center;justify-content:center;overflow-y:auto;padding:24px;">
   <div style="width:100%;max-width:360px;padding:32px 0;display:flex;flex-direction:column;gap:0;">
     <div style="margin-bottom:28px;">
@@ -81,7 +134,8 @@
 
 
 
-<!-- ══ ONBOARDING SCREEN ══════════════════════════════════ -->
+
+<!-- ── ONBOARDING SCREEN (Cadastro de Empresa) ──────────────── -->
 <div id="onboarding-screen" style="display:none;position:fixed;inset:0;z-index:9999;background:var(--bg);align-items:center;justify-content:center;padding:24px;">
   <div style="width:100%;max-width:360px;display:flex;flex-direction:column;gap:0;">
 
@@ -238,6 +292,10 @@
   </div>
 </div>
 
+
+<!-- ╔══════════════════════════════════════════════════════════╗
+     ║  PHONE SHELL — todo o app vive aqui                      ║
+     ╚══════════════════════════════════════════════════════════╝ -->
 <div class="phone" id="phone">
 
   <!-- Dynamic Island -->
@@ -292,10 +350,6 @@
 
         <!-- Quick actions -->
         <div class="qa-row" id="qaRow">
-          <div class="qa-btn" onclick="openSheet('sheet-nf')">
-            <div class="qa-ico" style="background:var(--accent-d)"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg></div>
-            <div class="qa-lbl">Nova Nota</div>
-          </div>
           <div class="qa-btn" onclick="switchPage('financeiro');setFtab('receber')">
             <div class="qa-ico" style="background:var(--green-d)"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
             <div class="qa-lbl">A Receber</div>
@@ -491,36 +545,6 @@
         </div>
 
         <div style="height:8px"></div>
-      </div>
-    </div>
-
-    <!-- ══════════════════════════════════════
-         NOTAS FISCAIS
-    ══════════════════════════════════════ -->
-    <div id="page-notas" class="page">
-      <div class="phdr">
-        <span class="phdr-title">Notas Fiscais</span>
-        <div class="phdr-right">
-          <div class="ibtn hide-btn" onclick="toggleHide()"><span class="eye-open"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></span><span class="eye-closed" style="display:none"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></span></div>
-          <div class="ibtn accent" onclick="openSheet('sheet-nf')"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
-        </div>
-      </div>
-
-      <div class="page-content">
-        <div class="search-wrap">
-          <span class="search-ico">◎</span>
-          <input type="text" class="search-input" placeholder="Buscar cliente ou número..." id="nfSearch" oninput="filterNFs(this.value)">
-        </div>
-
-        <div class="tab-row">
-          <div class="tab on" onclick="setNFTab('todas',this)">Todas (5)</div>
-          <div class="tab" onclick="setNFTab('pagas',this)">Pagas</div>
-          <div class="tab" onclick="setNFTab('pendentes',this)">Pendentes</div>
-          <div class="tab" onclick="setNFTab('recorrentes',this)">Recorrentes</div>
-        </div>
-
-        <div id="nfList"></div>
-        <div class="fab" onclick="openSheet('sheet-nf')">+</div>
       </div>
     </div>
 
@@ -880,16 +904,12 @@
 
   </div><!-- /screen -->
 
-  <!-- Bottom nav -->
+
+  <!-- ── BOTTOM NAV ───────────────────────────────────────────── -->
   <div class="nav" id="mainNav">
     <div class="ni" id="ni-home"      onclick="switchPage('home')">
       <div class="ni-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
       <div class="ni-label">INÍCIO</div>
-    </div>
-    <div class="ni" id="ni-notas"     onclick="switchPage('notas')">
-      <div class="ni-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></div>
-      <div class="ni-label">NOTAS</div>
-      <div class="ni-badge" id="notas-badge"></div>
     </div>
     <div class="ni" id="ni-financeiro" onclick="switchPage('financeiro')">
       <div class="ni-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
@@ -911,7 +931,8 @@
   </div>
 
 
-<!-- ══ SHEET: ADICIONAR EMPRESA ══════════════════════════════ -->
+
+<!-- ── SHEET: ADICIONAR EMPRESA ─────────────────────────────── -->
 <div id="sheet-add-company" class="overlay" onclick="closeSheetOutside(event,'sheet-add-company')">
   <div class="sheet" style="padding:24px;display:flex;flex-direction:column;gap:16px;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
@@ -938,52 +959,51 @@
   </div>
 </div>
 
-<!-- Modal: Nova NF -->
-<div class="overlay" id="sheet-nf" onclick="closeSheetOutside(event,'sheet-nf')">
-  <div class="sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-title">Nova Nota Fiscal</div>
-    <div class="field">
-      <div class="flabel">TIPO</div>
-      <select id="nf-tipo" class="finput">
-        <option value="NFS-e">NFS-e (Serviços)</option>
-        <option value="INVOICE-USD">Invoice Internacional (USD)</option>
-        <option value="INVOICE-EUR">Invoice Internacional (EUR)</option>
-      </select>
-    </div>
-    <div class="field">
-      <div class="flabel">CLIENTE</div>
-      <input id="nf-cliente" class="finput" type="text" placeholder="Nome do cliente">
-    </div>
-    <div class="field">
-      <div class="flabel">NÚMERO DA NOTA</div>
-      <input id="nf-numero" class="finput" type="text" placeholder="Ex: 2850">
-    </div>
-    <div class="field">
-      <div class="flabel">VALOR (R$)</div>
-      <input id="nf-valor" class="finput" type="number" placeholder="0,00">
-    </div>
-    <div class="field">
-      <div class="flabel">DESCRIÇÃO</div>
-      <input id="nf-descricao" class="finput" type="text" placeholder="Desenvolvimento de software — fev/25">
-    </div>
-    <div style="display:flex;align-items:center;gap:10px;padding:10px 0 18px">
-      <div id="nf-recorrente" class="toggle on" onclick="this.classList.toggle('on')"></div>
-      <span style="font-family:var(--f-mono);font-size:10px;color:var(--muted);letter-spacing:.5px">EMISSÃO RECORRENTE MENSAL</span>
-    </div>
-    <button class="btn-primary" onclick="emitirNF()">Emitir Nota Fiscal</button>
-    <button class="btn-ghost" onclick="closeSheet('sheet-nf')">Cancelar</button>
-  </div>
-</div>
-
 
 </div><!-- /phone -->
 
 <!-- Modal: Onboarding — Cadastro de Empresa -->
 
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="js/data.js"></script>
+
+<!-- ╔══════════════════════════════════════════════════════════╗
+     ║  SCRIPTS — ordem importa (dependências primeiro)         ║
+     ╚══════════════════════════════════════════════════════════╝ -->
+<script src="js/supabase-lib.js"></script>
+
+<!-- ═══ ESTADO GLOBAL — declarado inline para garantir disponibilidade
+     antes de qualquer script externo. window.X é necessário porque
+     const/let em <script> clássico ficam em script-scope isolado. ══ -->
+<script>
+  // UI State
+  window._hidden     = false;
+  window._calDate    = new Date();
+  window._chartMode  = 'inc';
+  window._toastTimer = undefined;
+  // App State
+  window._profile       = null;
+  window._companies     = [];
+  window._activeCompany = null;
+  window._kpis          = null;
+  // Arrays de dados (cache Supabase)
+  window.EXTRATO  = [];
+  window.PAGAR    = [];
+  window.RECEBER  = [];
+  window.IMPOSTOS = [];
+  window.PL_HIST  = [];
+  window.NFs      = [];
+  window.CASH     = { months: [], income: [], expense: [] };
+  // Constantes de domínio
+  window.MONTHS_PT = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+                      'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  window.STATUS_CFG = {
+    paid:    { label: 'PAGO',     cls: 'ok'  },
+    pending: { label: 'PENDENTE', cls: 'mid' },
+    overdue: { label: 'VENCIDA',  cls: 'bad' },
+  };
+</script>
+
+<script src="js/state.js"></script>
 <script src="js/company.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/pages.js"></script>
@@ -993,26 +1013,41 @@
 <script src="js/onboarding.js"></script>
 <script src="js/main-supabase.js"></script>
 
+  <!-- ═══ PWA — REGISTRO DO SERVICE WORKER ════════════════════════════ -->
   <script>
-    function setTheme(mode) {
-      document.body.setAttribute('data-theme', mode);
-      document.getElementById('btn-dark').classList.toggle('active', mode === 'dark');
-      document.getElementById('btn-light').classList.toggle('active', mode === 'light');
-      localStorage.setItem('theme', mode);
-    }
-    // Init on load
-    (function() {
-      const saved = localStorage.getItem('theme') || 'dark';
-      document.body.setAttribute('data-theme', saved);
-      window.addEventListener('DOMContentLoaded', function() {
-        const btnDark = document.getElementById('btn-dark');
-        const btnLight = document.getElementById('btn-light');
-        if (btnDark && btnLight) {
-          btnDark.classList.toggle('active', saved === 'dark');
-          btnLight.classList.toggle('active', saved === 'light');
-        }
+    if ('serviceWorker' in navigator) {
+      // Desregistra TODOS os SWs antigos e limpa TODOS os caches antes de registrar o novo.
+      // Isso garante que versões antigas com bugs (ex: NFs is not defined) sejam descartadas.
+      navigator.serviceWorker.getRegistrations().then(function(registrations) {
+        var unregisterAll = registrations.map(function(r) { return r.unregister(); });
+        return Promise.all(unregisterAll);
+      }).then(function() {
+        return caches.keys();
+      }).then(function(keys) {
+        return Promise.all(keys.map(function(k) { return caches.delete(k); }));
+      }).then(function() {
+        // Só registra o SW novo depois que tudo estiver limpo
+        return navigator.serviceWorker.register('/sw.js');
+      }).then(function(reg) {
+        console.log('[SW] Registrado limpo:', reg.scope);
+        reg.addEventListener('updatefound', function() {
+          var newWorker = reg.installing;
+          if (newWorker) {
+            newWorker.addEventListener('statechange', function() {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                newWorker.postMessage({ type: 'SKIP_WAITING' });
+              }
+            });
+          }
+        });
+      }).catch(function(err) { console.warn('[SW] Falha:', err); });
+
+      // Recarrega quando o novo SW assumir o controle
+      var refreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', function() {
+        if (!refreshing) { refreshing = true; window.location.reload(); }
       });
-    })();
+    }
   </script>
 </body>
 </html>

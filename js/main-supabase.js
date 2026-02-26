@@ -13,13 +13,12 @@
    → NÃO duplicar aqui — único ponto de verdade em ui.js
 
    ESTADO GLOBAL:
-   _profile, _companies, _activeCompany, _kpis, NFs, EXTRATO,
+   window._profile, window._companies, window._activeCompany, window._kpis, EXTRATO,
    PAGAR, RECEBER, IMPOSTOS, PL_HIST, CASH, FR
    → declarados em state.js — não duplicar aqui.
 ════════════════════════════════════════════════ */
 
 // Cache de módulo — variáveis internas não expostas ao escopo global
-let _nfData        = [];
 let _extratoData   = [];
 let _impostosData  = [];
 let _prolaboreData = [];
@@ -35,8 +34,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Só monitora SIGNED_OUT — para deslogar se sessão expirar em outra aba
   sbOnAuthChange((event) => {
     if (event === 'SIGNED_OUT') {
-      _profile   = null;
-      _companies = [];
+      window._profile = null;
+      window._companies = [];
       showLoginScreen(true);
     }
   });
@@ -57,26 +56,26 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function initApp() {
   showLoading(true);
   try {
-    _profile   = await fetchProfile();
-    _companies = await fetchCompanies();
+    window._profile = await fetchProfile();
+    window._companies = await fetchCompanies();
 
-    _activeCompany = _companies.length > 0 ? _companies[0] : null;
+    window._activeCompany = window._companies.length > 0 ? window._companies[0] : null;
 
     // ── Saudação personalizada ──────────────────────────────────────
-    if (_profile) {
+    if (window._profile) {
       const hour       = new Date().getHours();
       const greet      = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
-      const firstName  = (_profile.nome || _profile.email || '').split(' ')[0];
+      const firstName  = (window._profile.nome || window._profile.email || '').split(' ')[0];
       const greetHello = document.getElementById('greet-hello');
       const greetName  = document.getElementById('greet-name');
       if (greetHello) greetHello.textContent = greet + ', ' + firstName + ' 👋';
-      if (greetName)  greetName.textContent  = _profile.nome || _profile.email || '';
+      if (greetName)  greetName.textContent  = window._profile.nome || window._profile.email || '';
     }
 
     // ── Dados e UI da empresa ativa ─────────────────────────────────
-    if (_activeCompany) {
-      applyCompanyData(_activeCompany);
-      applyDefaultType(_activeCompany.porte || 'EPP');
+    if (window._activeCompany) {
+      applyCompanyData(window._activeCompany);
+      applyDefaultType(window._activeCompany.porte || 'EPP');
     }
 
     // ── Carrega todos os dados (inclui KPIs e CashFlow) ─────────────
@@ -86,7 +85,6 @@ async function initApp() {
     document.getElementById('ni-home').classList.add('active');
 
     // ── Build das listas ────────────────────────────────────────────
-    buildNFList();
     buildExtrato();
     buildPagar();
     buildReceber();
@@ -96,7 +94,7 @@ async function initApp() {
     // CORREÇÃO: buildPLHist só faz sentido para ME/EPP.
     // MEI não possui pró-labore formal — renderizar a lista vazia
     // causaria confusão; a tela MEI já tem conteúdo próprio (#pl-mei-content).
-    const porte = _activeCompany?.porte || 'EPP';
+    const porte = window._activeCompany?.porte || 'EPP';
     if (porte !== 'MEI') {
       buildPLHist();
     }
@@ -114,7 +112,7 @@ async function initApp() {
     }, 200);
 
     // ── Banner sem empresa ──────────────────────────────────────────
-    if (_companies.length === 0) {
+    if (window._companies.length === 0) {
       showNenhumaEmpresaBanner(true);
     }
 
@@ -126,8 +124,13 @@ async function initApp() {
 
   } catch (err) {
     showLoading(false);
-    console.error('[initApp]', err);
-    toast('❌', 'Erro ao carregar: ' + (err.message || err));
+    console.error('[initApp] ERRO COMPLETO:', err);
+    console.error('[initApp] message:', err?.message);
+    console.error('[initApp] code:', err?.code);
+    console.error('[initApp] details:', err?.details);
+    console.error('[initApp] hint:', err?.hint);
+    const msg = err?.message || err?.details || String(err) || 'Erro desconhecido';
+    toast('❌', 'Erro: ' + msg);
     showLoginScreen(true);
   }
 }
@@ -138,10 +141,9 @@ async function initApp() {
    individual de erro para não travar a tela.
 ════════════════════════════════════════════════ */
 async function loadAllData() {
-  const companyId = _activeCompany?.id || null;
+  const companyId = window._activeCompany?.id || null;
 
-  const [nfs, extrato, impostos, prolabore, pagar, receber, kpis, cashFlow] = await Promise.all([
-    fetchNFs({ companyId }).catch(e           => { console.warn('fetchNFs:', e);       return []; }),
+  const [extrato, impostos, prolabore, pagar, receber, kpis, cashFlow] = await Promise.all([
     fetchExtrato({ companyId }).catch(e       => { console.warn('fetchExtrato:', e);   return []; }),
     fetchImpostos({ companyId }).catch(e      => { console.warn('fetchImpostos:', e);  return []; }),
     fetchProlabore({ companyId }).catch(e     => { console.warn('fetchProlabore:', e); return []; }),
@@ -151,27 +153,25 @@ async function loadAllData() {
     fetchCashFlow({ companyId, months: 12 }).catch(e => { console.warn('fetchCashFlow:', e); return null; }),
   ]);
 
-  _nfData        = nfs;
   _extratoData   = extrato;
   _impostosData  = impostos;
   _prolaboreData = prolabore;
   _pagarData     = pagar;
   _receberData   = receber;
-  _kpis          = kpis;
+  window._kpis = kpis;
 
   // Sincroniza arrays globais consumidos por pages.js / charts.js
-  NFs.length = 0;      NFs.push(..._nfData);
-  EXTRATO.length = 0;  EXTRATO.push(..._extratoData);
-  IMPOSTOS.length = 0; IMPOSTOS.push(..._impostosData);
-  PL_HIST.length = 0;  PL_HIST.push(..._prolaboreData);
-  PAGAR.length = 0;    PAGAR.push(..._pagarData);
-  RECEBER.length = 0;  RECEBER.push(..._receberData);
+  window.EXTRATO.length = 0;  window.EXTRATO.push(..._extratoData);
+  window.IMPOSTOS.length = 0; window.IMPOSTOS.push(..._impostosData);
+  window.PL_HIST.length = 0;  window.PL_HIST.push(..._prolaboreData);
+  window.PAGAR.length = 0;    window.PAGAR.push(..._pagarData);
+  window.RECEBER.length = 0;  window.RECEBER.push(..._receberData);
 
   // Atualiza CASH para charts.js
   if (cashFlow) {
-    CASH.months  = cashFlow.months;
-    CASH.income  = cashFlow.income;
-    CASH.expense = cashFlow.expense;
+    window.CASH.months  = cashFlow.months;
+    window.CASH.income  = cashFlow.income;
+    window.CASH.expense = cashFlow.expense;
   }
 }
 
@@ -182,9 +182,9 @@ async function loadAllData() {
    injeta os data-attributes que o chart consome.
 ════════════════════════════════════════════════ */
 function renderKPIs() {
-  if (!_kpis) return;
+  if (!window._kpis) return;
 
-  const { receita, despesa, resultado } = _kpis;
+  const { receita, despesa, resultado } = window._kpis;
   // fmtKPI / fmtSimples / fmtK — definidas globalmente em charts.js (carrega antes)
 
   // ── Resultado do mês ──────────────────────────────────────────────
@@ -299,8 +299,8 @@ async function doLogin() {
 
 async function doLogout() {
   await sbLogout();
-  _profile   = null;
-  _companies = [];
+  window._profile = null;
+  window._companies = [];
   showLoginScreen(true);
 }
 
@@ -332,7 +332,7 @@ async function doCreateAccount() {
 
   showLoading(true);
   try {
-    const { data, error } = await sb.auth.signUp({
+    const { data, error } = await window.sb.auth.signUp({
       email,
       password: senha,
       options: { data: { nome, nascimento, cpf, telefone } }
@@ -411,25 +411,24 @@ async function doAddCompany() {
   showLoading(true);
   try {
     const newCompany = await createCompany({ name, cnpj, porte });
-    _companies.push(newCompany);
-    _activeCompany = newCompany;
+    window._companies.push(newCompany);
+    window._activeCompany = newCompany;
 
-    applyCompanyData(_activeCompany);
-    applyDefaultType(_activeCompany.porte || 'EPP');
+    applyCompanyData(window._activeCompany);
+    applyDefaultType(window._activeCompany.porte || 'EPP');
     closeSheet('sheet-add-company');
     showNenhumaEmpresaBanner(false);
 
     // CORREÇÃO: recarrega todos os dados para a nova empresa e reconstrói
     // todas as listas — sem isso, as telas ficavam com dados da empresa anterior.
     await loadAllData();
-    buildNFList();
     buildExtrato();
     buildPagar();
     buildReceber();
     buildTaxList();
     buildCalendar();
 
-    const porteNovo = _activeCompany.porte || 'EPP';
+    const porteNovo = window._activeCompany.porte || 'EPP';
     if (porteNovo !== 'MEI') buildPLHist();
 
     renderKPIs();
@@ -444,45 +443,13 @@ async function doAddCompany() {
 }
 window.doAddCompany = doAddCompany;
 
-/* ════════════════════════════════════════════════
-   NF / IMPOSTOS / PRÓ-LABORE
-════════════════════════════════════════════════ */
-window.emitirNF = async function() {
-  const numero     = document.getElementById('nf-numero')?.value?.trim();
-  const cliente    = document.getElementById('nf-cliente')?.value?.trim();
-  const valor      = document.getElementById('nf-valor')?.value?.trim();
-  const tipo       = document.getElementById('nf-tipo')?.value || 'NFS-e';
-  const descricao  = document.getElementById('nf-descricao')?.value?.trim() || '';
-  const recorrente = document.getElementById('nf-recorrente')?.classList.contains('on') ?? false;
-
-  if (!numero || !cliente || !valor) { toast('⚠️', 'Preencha todos os campos'); return; }
-  if (!_activeCompany?.id) { toast('⚠️', 'Selecione uma empresa primeiro'); return; }
-
-  try {
-    await createNF({
-      companyId:    _activeCompany.id,
-      numero,
-      cliente,
-      tipo,
-      descricao,
-      recorrente,
-      valor:        parseFloat(valor.replace(',', '.')),
-      data_emissao: new Date().toISOString().slice(0, 10),
-    });
-    closeSheet('sheet-nf');
-    toast('🚀', 'Nota fiscal emitida!');
-    _nfData = await fetchNFs({ companyId: _activeCompany.id });
-    NFs.length = 0; NFs.push(..._nfData);
-    buildNFList();
-  } catch (err) { toast('❌', 'Erro: ' + err.message); }
-};
 
 window.marcarImpostoPago = async function(uuid) {
   try {
     await pagarImposto(uuid);
     toast('✅', 'Imposto marcado como pago!');
-    _impostosData = await fetchImpostos({ companyId: _activeCompany?.id });
-    IMPOSTOS.length = 0; IMPOSTOS.push(..._impostosData);
+    _impostosData = await fetchImpostos({ companyId: window._activeCompany?.id });
+    window.IMPOSTOS.length = 0; window.IMPOSTOS.push(..._impostosData);
     buildTaxList();
   } catch (err) { toast('❌', 'Erro: ' + err.message); }
 };
@@ -491,8 +458,8 @@ window.marcarPLPago = async function(uuid) {
   try {
     await marcarProlaborePago(uuid);
     toast('✅', 'Pró-labore pago!');
-    _prolaboreData = await fetchProlabore({ companyId: _activeCompany?.id });
-    PL_HIST.length = 0; PL_HIST.push(..._prolaboreData);
+    _prolaboreData = await fetchProlabore({ companyId: window._activeCompany?.id });
+    window.PL_HIST.length = 0; window.PL_HIST.push(..._prolaboreData);
     buildPLHist();
   } catch (err) { toast('❌', 'Erro: ' + err.message); }
 };
@@ -506,8 +473,8 @@ window.selectCompanyType = async function(type, btn) {
   btn.classList.add('active');
 
   const d = COMPANY_DATA[type];
-  document.getElementById('idCompanyName').textContent    = _activeCompany?.name || d.name;
-  document.getElementById('idCnpj').textContent           = 'CNPJ · ' + (_activeCompany?.cnpj || '00.000.000/0001-00');
+  document.getElementById('idCompanyName').textContent    = window._activeCompany?.name || d.name;
+  document.getElementById('idCnpj').textContent           = 'CNPJ · ' + (window._activeCompany?.cnpj || '00.000.000/0001-00');
   document.getElementById('idPorte').textContent          = d.porte;
   document.getElementById('idRegime').textContent         = d.regime;
   document.getElementById('idTypeBadge').textContent      = d.badge;
@@ -532,14 +499,14 @@ window.selectCompanyType = async function(type, btn) {
   // CORREÇÃO: persiste no banco E atualiza _activeCompany em memória —
   // sem isso, initApp() na próxima sessão lia o porte desatualizado do objeto
   // em RAM e tomava decisões erradas (ex.: buildPLHist() para MEI).
-  if (_activeCompany?.id) {
+  if (window._activeCompany?.id) {
     try {
-      const updated = await saveCompany({ id: _activeCompany.id, porte: type });
+      const updated = await saveCompany({ id: window._activeCompany.id, porte: type });
       // Mescla o retorno do banco para garantir sincronismo
-      _activeCompany = { ..._activeCompany, ...updated, porte: type };
+      window._activeCompany = { ...window._activeCompany, ...updated, porte: type };
     } catch(e) {
       // Mesmo que o banco falhe, mantém a memória atualizada
-      _activeCompany = { ..._activeCompany, porte: type };
+      window._activeCompany = { ...window._activeCompany, porte: type };
       console.warn('[selectCompanyType] Falha ao persistir porte:', e);
     }
   }

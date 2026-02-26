@@ -1,8 +1,8 @@
 /* ════════════════════════════════════════════════
-   UI.JS
+   UI.JS  —  v30
    Responsável por: navegação, toast, sheets,
-   máscaras de input, toggleHide e controle de
-   telas de autenticação (login / register / onboarding).
+   máscaras de input, toggleHide, setTheme e controle
+   de telas de autenticação (login / register / onboarding).
 
    REGRA: toda função chamada via onclick no HTML
    deve ser exposta em window.*  — ver bloco no final.
@@ -14,11 +14,51 @@
 function switchPage(p) {
   document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
   document.querySelectorAll('.ni').forEach(el => el.classList.remove('active'));
-  document.getElementById('page-' + p).classList.add('active');
+  const page = document.getElementById('page-' + p);
+  if (page) {
+    page.classList.add('active');
+    page.scrollTop = 0; // volta ao topo ao trocar de aba
+  }
   const ni = document.getElementById('ni-' + p);
   if (ni) ni.classList.add('active');
   if (p === 'financeiro') setTimeout(buildCFChart, 60);
 }
+
+/* ════════════════════
+   TEMA  (migrado do inline de index.html)
+   Persiste no localStorage e aplica data-theme no <body>.
+════════════════════ */
+
+/**
+ * Aplica o tema claro ou escuro.
+ * @param {'dark'|'light'} mode
+ */
+function setTheme(mode) {
+  document.body.setAttribute('data-theme', mode);
+  const btnDark  = document.getElementById('btn-dark');
+  const btnLight = document.getElementById('btn-light');
+  if (btnDark)  btnDark.classList.toggle('active',  mode === 'dark');
+  if (btnLight) btnLight.classList.toggle('active', mode === 'light');
+  localStorage.setItem('theme', mode);
+}
+
+/**
+ * Lê o tema salvo (ou 'dark' por padrão) e aplica imediatamente.
+ * Deve ser chamada assim que o DOM estiver disponível.
+ * Chamada automaticamente no DOMContentLoaded abaixo.
+ */
+function initTheme() {
+  const saved = localStorage.getItem('theme') || 'dark';
+  setTheme(saved);
+}
+
+// Aplica o atributo no <html> o mais cedo possível (antes do DOMContentLoaded)
+// para evitar flash de tema errado.
+(function () {
+  const saved = localStorage.getItem('theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', saved);
+  document.addEventListener('DOMContentLoaded', initTheme);
+})();
 
 /* ════════════════════
    TELAS DE AUTH
@@ -68,8 +108,11 @@ function toast(ico, msg) {
   if (ex) { ex.remove(); clearTimeout(_toastTimer); }
   const el = document.createElement('div'); el.className = 'toast';
   el.innerHTML = '<span class="toast-ico">'+ico+'</span><span class="toast-msg">'+msg+'</span>';
-  document.body.appendChild(el);
-  _toastTimer = setTimeout(() => {
+  // Insere dentro do .phone para ficar acima de sheets e overlays.
+  // Se .phone não existir (ex: tela de login), usa document.body como fallback.
+  const container = document.querySelector('.phone') || document.body;
+  container.appendChild(el);
+  window._toastTimer = setTimeout(() => {
     el.style.transition = 'opacity .2s'; el.style.opacity = '0';
     setTimeout(() => el.remove(), 200);
   }, 2400);
@@ -86,11 +129,11 @@ function closeSheetOutside(e, id) { if (e.target === document.getElementById(id)
    TOGGLE HIDE (valores monetários)
 ════════════════════ */
 function toggleHide() {
-  _hidden = !_hidden;
+  window._hidden = !window._hidden;
 
   document.querySelectorAll('.val').forEach(el => {
-    if (el.classList.contains('cents')) return; // filho de .val — tratado pelo pai
-    if (_hidden) {
+    if (el.classList.contains('cents')) return;
+    if (window._hidden) {
       if (!el.dataset.orig) el.dataset.orig = el.innerHTML;
       el.innerHTML = '<span style="letter-spacing:2px">••••</span>';
     } else {
@@ -99,10 +142,10 @@ function toggleHide() {
   });
 
   document.querySelectorAll('.hide-btn .eye-open').forEach(el => {
-    el.style.display = _hidden ? 'none' : '';
+    el.style.display = window._hidden ? 'none' : '';
   });
   document.querySelectorAll('.hide-btn .eye-closed').forEach(el => {
-    el.style.display = _hidden ? '' : 'none';
+    el.style.display = window._hidden ? '' : 'none';
   });
 }
 
@@ -142,15 +185,17 @@ function maskFone(input) {
    EXPOR AO ESCOPO GLOBAL
    (necessário para handlers inline no HTML)
 ════════════════════ */
-window.switchPage          = switchPage;
-window.showLoginScreen     = showLoginScreen;
-window.showRegisterScreen  = showRegisterScreen;
+window.switchPage           = switchPage;
+window.setTheme             = setTheme;
+window.initTheme            = initTheme;
+window.showLoginScreen      = showLoginScreen;
+window.showRegisterScreen   = showRegisterScreen;
 window.showOnboardingScreen = showOnboardingScreen;
-window.toast               = toast;
-window.openSheet           = openSheet;
-window.closeSheet          = closeSheet;
-window.closeSheetOutside   = closeSheetOutside;
-window.toggleHide          = toggleHide;
-window.maskCNPJ            = maskCNPJ;
-window.maskCPF             = maskCPF;
-window.maskFone            = maskFone;
+window.toast                = toast;
+window.openSheet            = openSheet;
+window.closeSheet           = closeSheet;
+window.closeSheetOutside    = closeSheetOutside;
+window.toggleHide           = toggleHide;
+window.maskCNPJ             = maskCNPJ;
+window.maskCPF              = maskCPF;
+window.maskFone             = maskFone;

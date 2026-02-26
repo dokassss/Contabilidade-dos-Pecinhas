@@ -11,7 +11,7 @@
    Fontes de dados:
      • buildHomeChart lê data-attributes injetados por renderKPIs()
        (data-income em #cfeIncFill, data-expense em #cfeExpFill)
-     • buildCFChart e a sparkline consomem CASH[] de state.js,
+     • buildCFChart e a sparkline consomem window.CASH[] de state.js,
        populado por fetchCashFlow() via loadAllData()
 
    Ordem de carregamento: charts.js vem ANTES de main-supabase.js,
@@ -102,12 +102,12 @@ function buildHomeChart() {
   el.innerHTML = '';
 
   // Aguarda CASH ser populado por loadAllData() — sem dados, não renderiza
-  if (!CASH.months.length) return;
+  if (!window.CASH.months.length) return;
 
-  const count   = Math.min(5, CASH.months.length);
-  const months  = CASH.months.slice(-count);
-  const income  = CASH.income.slice(-count);
-  const expense = CASH.expense.slice(-count);
+  const count   = Math.min(5, window.CASH.months.length);
+  const months  = window.CASH.months.slice(-count);
+  const income  = window.CASH.income.slice(-count);
+  const expense = window.CASH.expense.slice(-count);
   const results = income.map((inc, i) => inc - expense[i]);
   const maxAbs  = Math.max(...results.map(Math.abs), 1);
 
@@ -139,7 +139,7 @@ function buildHomeChart() {
    Barras duplas receita (verde) / despesa (vermelho)
    para cada um dos últimos 12 meses — tela Financeiro.
 
-   Consome CASH[] de state.js.
+   Consome window.CASH[] de state.js.
    Se não houver dados, exibe estado vazio no lugar.
 ───────────────────────────────────────────────*/
 function buildCFChart() {
@@ -151,7 +151,7 @@ function buildCFChart() {
   lblsEl.innerHTML = '';
 
   // ── Estado vazio ─────────────────────────────────────────────────
-  if (!CASH.months.length) {
+  if (!window.CASH.months.length) {
     const empty = document.createElement('div');
     empty.style.cssText = [
       'grid-column:1/-1', 'display:flex', 'flex-direction:column',
@@ -170,11 +170,11 @@ function buildCFChart() {
   }
 
   // ── Escala: máximo entre receita e despesa de todos os meses ─────
-  const maxVal = Math.max(...CASH.income, ...CASH.expense, 1);
+  const maxVal = Math.max(...window.CASH.income, ...window.CASH.expense, 1);
 
-  CASH.months.forEach((m, i) => {
-    const incVal = CASH.income[i]  || 0;
-    const expVal = CASH.expense[i] || 0;
+  window.CASH.months.forEach((m, i) => {
+    const incVal = window.CASH.income[i]  || 0;
+    const expVal = window.CASH.expense[i] || 0;
 
     const pair = document.createElement('div');
     pair.className = 'cf-pair';

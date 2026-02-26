@@ -15,7 +15,7 @@
    A service_role key (essa SIM é secreta) nunca deve
    aparecer no frontend.
 ──────────────────────────────────────────────── */
-const sb = supabase.createClient(
+window.sb = supabase.createClient(
   'https://splkxinyfckuywpekxbf.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNwbGt4aW55ZmNrdXl3cGVreGJmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE2MTg4MDcsImV4cCI6MjA4NzE5NDgwN30.blm5MkslHBd34bHQ4Kg6H2_F9EXrej_uqwa0L74lvN8'
 );
@@ -34,7 +34,7 @@ const sb = supabase.createClient(
 ──────────────────────────────────────────────── */
 async function sbGetUser() {
   try {
-    const { data, error } = await sb.auth.getUser();
+    const { data, error } = await window.sb.auth.getUser();
     if (error) {
       // AuthSessionMissingError é esperado quando não há sessão — silencia.
       // Outros erros (rede, token corrompido) são logados mas não propagados:
@@ -58,7 +58,7 @@ async function sbGetUser() {
    o chamador (doLogin) é responsável pelo toast.
 ──────────────────────────────────────────────── */
 async function sbLogin(email, password) {
-  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+  const { data, error } = await window.sb.auth.signInWithPassword({ email, password });
   if (error) throw error;
   return data.user;
 }
@@ -69,7 +69,7 @@ async function sbLogin(email, password) {
    o estado local é limpo pelo listener sbOnAuthChange.
 ──────────────────────────────────────────────── */
 async function sbLogout() {
-  await sb.auth.signOut();
+  await window.sb.auth.signOut();
 }
 
 /* ── sbOnAuthChange ─────────────────────────────
@@ -78,7 +78,7 @@ async function sbLogout() {
    O app só reage a SIGNED_OUT (ver main-supabase.js).
 ──────────────────────────────────────────────── */
 function sbOnAuthChange(callback) {
-  sb.auth.onAuthStateChange((event, session) => {
+  window.sb.auth.onAuthStateChange((event, session) => {
     callback(event, session?.user ?? null);
   });
 }
@@ -89,7 +89,7 @@ function sbOnAuthChange(callback) {
   ║                                              ║
   ║  O Supabase exige que o perfil (tabela        ║
   ║  profiles) seja criado junto com o usuário.  ║
-  ║  Usar sb.auth.signUp() diretamente criaria   ║
+  ║  Usar window.sb.auth.signUp() diretamente criaria   ║
   ║  um usuário sem perfil — estado inválido.    ║
   ║                                              ║
   ║  Use doCreateAccount() em main-supabase.js,  ║

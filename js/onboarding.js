@@ -19,7 +19,17 @@ function obSelectTipo(tipo) {
 
 /* ── NAVEGAÇÃO ENTRE PASSOS ─────────────────── */
 function obNextStep(step) {
-  // Validações antes de avançar
+
+  // Validação do Step 1: porte deve estar selecionado antes de avançar
+  if (step === 2) {
+    const porte = document.getElementById('ob-porte')?.value?.trim();
+    if (!porte) {
+      toast('⚠️', 'Selecione o tipo de empresa para continuar');
+      return;
+    }
+  }
+
+  // Validações antes de avançar para Step 3
   if (step === 3) {
     const nome    = document.getElementById('ob-user-name')?.value?.trim();
     const cpf     = document.getElementById('ob-user-cpf')?.value?.trim();
@@ -37,7 +47,7 @@ function obNextStep(step) {
     if (!empresa)                                          { toast('⚠️', 'Digite o nome da empresa'); return; }
     if (!cnpj || cnpj.replace(/\D/g,'').length < 14)      { toast('⚠️', 'Digite um CNPJ válido'); return; }
 
-    // Preenche confirmação
+    // Preenche tela de confirmação
     const porte = document.getElementById('ob-porte')?.value || 'ME';
     const regimes = { MEI: 'DAS-MEI (fixo)', ME: 'Simples Nacional', EPP: 'Simples Nacional' };
     const el = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
@@ -94,6 +104,8 @@ async function cadastrarEmpresa() {
 
   if (typeof showLoading === 'function') showLoading(true);
 
+  let userId = null; // guarda o ID para rollback em caso de falha
+
   try {
     // 1. Cria conta no Supabase Auth
     const { data, error } = await sb.auth.signUp({
@@ -114,6 +126,8 @@ async function cadastrarEmpresa() {
       return;
     }
 
+    userId = user.id;
+
     // 2. Cria perfil
     if (typeof createProfile === 'function') {
       await createProfile({ userId: user.id, nome, cpf, telefone: fone, email, nascimento: '' });
@@ -122,17 +136,36 @@ async function cadastrarEmpresa() {
     const isConfirmed = !!(user.confirmed_at || user.email_confirmed_at);
 
     if (isConfirmed) {
-      // 3. Cria empresa
-      if (typeof createCompany === 'function') {
-        await createCompany({ name: empresa, cnpj, porte, cidade });
+      // 3. Cria empresa — com rollback se falhar
+      try {
+        if (typeof createCompany === 'function') {
+          await createCompany({ name: empresa, cnpj, porte, cidade });
+        }
+      } catch (companyErr) {
+        // Rollback: remove perfil e apaga a conta para não deixar usuário órfão sem empresa
+        console.error('[onboarding] createCompany falhou — iniciando rollback:', companyErr);
+        try {
+          // Remove o perfil criado no passo anterior (chave correta: user_id, não id)
+          if (typeof sb !== 'undefined') {
+            await sb.from('profiles').delete().eq('user_id', userId);
+          }
+          // Faz logout para limpar a sessão Auth (a conta fica pendente de remoção pelo admin)
+          await sb.auth.signOut();
+        } catch (rollbackErr) {
+          console.error('[onboarding] Rollback parcialmente falhou:', rollbackErr);
+        }
+        if (typeof showLoading === 'function') showLoading(false);
+        toast('❌', 'Erro ao criar empresa. Tente novamente.');
+        return;
       }
+
       if (typeof showLoading === 'function') showLoading(false);
       showOnboardingScreen(false);
       if (typeof initApp === 'function') await initApp();
     } else {
       if (typeof showLoading === 'function') showLoading(false);
       showOnboardingScreen(false);
-      // Mostra confirmação de email
+      // Mostra confirmação de e-mail
       showLoginScreen(true);
       const box = document.getElementById('login-box');
       if (box) {
@@ -157,7 +190,7 @@ async function cadastrarEmpresa() {
 }
 
 // Expõe funções ao escopo global (necessário para handlers inline no HTML)
-window.obSelectTipo    = obSelectTipo;
-window.obNextStep      = obNextStep;
-window.obCancelar      = obCancelar;
+window.obSelectTipo     = obSelectTipo;
+window.obNextStep       = obNextStep;
+window.obCancelar       = obCancelar;
 window.cadastrarEmpresa = cadastrarEmpresa;

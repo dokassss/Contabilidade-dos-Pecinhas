@@ -5,8 +5,8 @@ let companyType = 'EPP'; // default
 
 const COMPANY_DATA = {
   MEI: {
-    name: 'Fantinny Entretenimentos',
-    cnpj: '12.345.678/0001-90',
+    name: 'Minha Empresa',      // fallback quando _activeCompany for null
+    cnpj: '00.000.000/0001-00', // fallback — substituído por dados reais em selectCompanyType()
     porte: 'MEI',
     regime: 'DAS-MEI (fixo)',
     badge: 'MEI',
@@ -14,8 +14,8 @@ const COMPANY_DATA = {
     pageTitle: 'Informações MEI',
   },
   ME: {
-    name: 'Fantinny Entretenimentos',
-    cnpj: '12.345.678/0001-90',
+    name: 'Minha Empresa',
+    cnpj: '00.000.000/0001-00',
     porte: 'ME',
     regime: 'Simples Nacional',
     badge: 'ME',
@@ -23,8 +23,8 @@ const COMPANY_DATA = {
     pageTitle: 'Pró-labore',
   },
   EPP: {
-    name: 'Fantinny Entretenimentos',
-    cnpj: '12.345.678/0001-90',
+    name: 'Minha Empresa',
+    cnpj: '00.000.000/0001-00',
     porte: 'EPP',
     regime: 'Simples Nacional',
     badge: 'EPP',
@@ -33,27 +33,54 @@ const COMPANY_DATA = {
   },
 };
 
+/*
+ * IDs do DOM manipulados por applyDefaultType().
+ * Centralizado aqui para facilitar manutenção caso os IDs mudem no HTML.
+ */
+const APPLY_TYPE_DOM_IDS = {
+  meiContent  : 'pl-mei-content',  // bloco visível quando porte === MEI
+  fullContent : 'pl-full-content', // bloco visível quando porte !== MEI
+  frAlert     : 'frAlert',         // alerta do Fator R (oculto no MEI)
+  sBar        : 'sBar',            // barra de alíquota
+  navLabel    : 'niPlLabel',       // label do item de nav (MEI vs FATOR R)
+  pageTitle   : 'plPageTitle',     // título da aba de pró-labore
+};
+
 function applyDefaultType(type) {
   type = type || 'EPP';
-  // Activate correct pill
+
+  // Ativa a pill correta
   document.querySelectorAll('.type-pill').forEach(p => {
     p.classList.toggle('active', p.dataset.type === type);
   });
+
+  const ids = APPLY_TYPE_DOM_IDS;
+
+  const meiContent  = document.getElementById(ids.meiContent);
+  const fullContent = document.getElementById(ids.fullContent);
+  const frAlert     = document.getElementById(ids.frAlert);
+  const sBar        = document.getElementById(ids.sBar);
+
   if (type === 'MEI') {
-    document.getElementById('pl-mei-content').style.display = 'block';
-    document.getElementById('pl-full-content').style.display = 'none';
-    const fa = document.getElementById('frAlert'); if (fa) fa.style.display = 'none';
-    document.getElementById('sBar').style.width = '34.6%';
+    if (meiContent)  meiContent.style.display  = 'block';
+    if (fullContent) fullContent.style.display = 'none';
+    if (frAlert)     frAlert.style.display     = 'none';
+    if (sBar)        sBar.style.width          = '34.6%';
   } else {
-    document.getElementById('pl-mei-content').style.display = 'none';
-    document.getElementById('pl-full-content').style.display = 'block';
-    const fa = document.getElementById('frAlert'); if (fa) fa.style.display = 'flex';
-    document.getElementById('sBar').style.width = '35.4%';
+    if (meiContent)  meiContent.style.display  = 'none';
+    if (fullContent) fullContent.style.display = 'block';
+    if (frAlert)     frAlert.style.display     = 'flex';
+    if (sBar)        sBar.style.width          = '35.4%';
   }
+
   const d = COMPANY_DATA[type] || COMPANY_DATA['EPP'];
-  document.getElementById('niPlLabel').textContent = d.navLabel;
-  document.getElementById('plPageTitle').textContent = d.pageTitle;
+
+  const navLabelEl  = document.getElementById(ids.navLabel);
+  const pageTitleEl = document.getElementById(ids.pageTitle);
+  if (navLabelEl)  navLabelEl.textContent  = d.navLabel;
+  if (pageTitleEl) pageTitleEl.textContent = d.pageTitle;
+
   companyType = type;
 }
 
-// selectCompanyType is exposed in main-supabase.js (window.selectCompanyType = async function...)
+// selectCompanyType é exposto em main-supabase.js (window.selectCompanyType = async function...)
